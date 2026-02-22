@@ -57,27 +57,31 @@
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand(); // Развернуть на весь экран
+    const tg = window.Telegram.WebApp;
+    tg.ready(); // ОБЯЗАТЕЛЬНО: сообщает Telegram, что приложение загрузилось
+    tg.expand(); 
 
-        // Твоя дата (Год, Месяц-1, День)
-        const startDate = new Date(2023, 5, 20); 
+    // Эта функция связывает нажатие кнопки на сайте с отправкой сообщения боту
+    function sendMsg(text) {
+        tg.sendData(text); // Отправляет текст и САМО закрывает приложение
+    }
 
-        function updateTimer() {
-            const now = new Date();
-            const diff = now - startDate;
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-            const mins = Math.floor((diff / (1000 * 60)) % 60);
-            document.getElementById('timer').innerText = `${days}д. ${hours}ч. ${mins}м.`;
+    // Логика таймера (оставь свою или используй эту)
+    const startDate = new Date(2023, 5, 20); 
+    function updateTimer() {
+        const now = new Date();
+        const diff = now - startDate;
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const mins = Math.floor((diff / (1000 * 60)) % 60);
+        const timerElement = document.getElementById('timer');
+        if (timerElement) {
+            timerElement.innerText = `${days}д. ${hours}ч. ${mins}м.`;
         }
-
-        function sendMsg(text) {
-            tg.sendData(text); // Отправляет текст боту и закрывает приложение
-        }
-
-        setInterval(updateTimer, 1000);
-        updateTimer();
-    </script>
+    }
+    setInterval(updateTimer, 1000);
+    updateTimer();
+</script>
 </body>
 </html>
+
