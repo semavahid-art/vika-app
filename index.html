@@ -199,7 +199,7 @@
         <div id="game-area">
             <div class="mountains" id="mountains"></div>
             <div class="ground" id="ground"></div>
-            <div id="instruction">Тапай, чтобы прыгать!<br><span style="font-size: 16px;">(Лови ⭐ для супер-силы!)</span></div>
+            <div id="instruction">Тапай, чтобы прыгать!<br><span style="font-size: 15px;">(Осторожно: 💣 и низкие 🦅! Лови ⭐)</span></div>
             
             <div id="syoma" class="sprite">
                 <div id="syoma-inner" class="character">
@@ -353,7 +353,7 @@
             vikaEl.style.display = 'none'; vikaEl.style.left = '100%';
             
             document.querySelectorAll('.obstacle, .collectible, .cloud, .star').forEach(e => e.remove());
-            instruction.innerHTML = "Тапай, чтобы прыгать!<br><span style='font-size: 16px;'>(Лови ⭐ для супер-силы!)</span>";
+            instruction.innerHTML = "Тапай, чтобы прыгать!<br><span style='font-size: 15px;'>(Осторожно: 💣 и низкие 🦅! Лови ⭐)</span>";
             instruction.style.opacity = '1';
             
             gameActive = true;
@@ -395,7 +395,6 @@
             try { 
                 tg.sendData(`Сёма собрал ${score} сердец, преодолел огромный путь и обнял Вику! 🏃🏻‍♂️❤️👸🏼`); 
             } catch(err) {
-                // Если не сработает sendData, просто закроем окно
                 try { tg.close(); } catch(e){}
             }
         }
@@ -425,22 +424,19 @@
             }
         }
 
-        // БЕЗОПАСНАЯ ФУНКЦИЯ ЗАВЕРШЕНИЯ (вызывается 1 раз)
+        // БЕЗОПАСНАЯ ФУНКЦИЯ ЗАВЕРШЕНИЯ
         function triggerFinale() {
-            gameActive = false; // ЖЕСТКАЯ ОСТАНОВКА ЦИКЛА
+            gameActive = false; 
             syomaInner.classList.remove('running');
             syomaInner.classList.remove('super-mode');
             instruction.innerText = "ПРИНЦЕССА СПАСЕНА! ❤️"; instruction.style.opacity = '1';
             
-            // Наклон для поцелуя
             syomaInner.className = 'character lean-right';
             document.getElementById('vika-inner').className = 'character lean-left';
             soundWin();
 
-            // Очистка экрана от лишнего мусора, чтобы не висло
             document.querySelectorAll('.obstacle, .collectible, .cloud, .star').forEach(e => e.remove());
 
-            // Сердечко между ними
             let vRect = vikaEl.getBoundingClientRect();
             const mh = document.createElement('div');
             mh.className = 'mini-heart'; mh.innerText = '💗';
@@ -449,15 +445,12 @@
             mh.style.zIndex = '5'; mh.style.animation = 'miniHeartFly 1.5s ease-out forwards';
             gameArea.appendChild(mh);
 
-            // Рандомный текст
             const randomMessage = loveMessages[Math.floor(Math.random() * loveMessages.length)];
             document.getElementById('dynamic-love-message').innerText = randomMessage;
 
-            // Показываем открытку через секунду
             setTimeout(() => {
                 const modal = document.getElementById('finale-modal');
                 modal.style.display = 'flex';
-                // Принудительно заставляем браузер отрисовать modal перед изменением opacity
                 void modal.offsetWidth;
                 modal.style.opacity = '1';
                 document.getElementById('finale-card').classList.add('pop-animation');
@@ -503,22 +496,36 @@
                 gameArea.appendChild(cloud); cloudTimer = 0;
             }
 
+            // --- ДИНАМИЧЕСКИЙ СПАВН С УСЛОЖНЕНИЕМ ---
             if (distance < finishDistance - 800 && !isFinishing) {
                 spawnTimer++;
-                if (spawnTimer > 60 + Math.random() * 50) { 
+                // Чем ближе к концу, тем меньше задержка между преградами!
+                let progress = distance / finishDistance;
+                let baseDelay = 60 - (30 * progress);
+                let randDelay = 50 - (25 * progress);
+
+                if (spawnTimer > baseDelay + Math.random() * randDelay) { 
                     const rand = Math.random();
                     if (rand < 0.05 && !superMode) {
                         const star = document.createElement('div'); star.className = 'collectible star'; star.innerText = '⭐';
                         star.style.left = gameArea.offsetWidth + 'px'; star.style.bottom = `calc(20vh + ${70 + Math.random() * 60}px)`; 
                         gameArea.appendChild(star);
                     } 
-                    else if (rand < 0.3) {
-                        const heartObj = document.createElement('div'); heartObj.className = 'collectible'; heartObj.innerText = '💖';
-                        heartObj.style.left = gameArea.offsetWidth + 'px'; heartObj.style.bottom = `calc(20vh + ${70 + Math.random() * 70}px)`; 
-                        gameArea.appendChild(heartObj);
-                    } else if (rand < 0.5) {
+                    else if (rand < 0.35) {
+                        // БОМБА ИЛИ СЕРДЦЕ (30% шанс на бомбу)
+                        const isBomb = Math.random() < 0.3;
+                        const itemObj = document.createElement('div'); 
+                        itemObj.className = isBomb ? 'collectible bomb' : 'collectible heart'; 
+                        itemObj.innerText = isBomb ? '💣' : '💖';
+                        itemObj.style.left = gameArea.offsetWidth + 'px'; 
+                        itemObj.style.bottom = `calc(20vh + ${60 + Math.random() * 60}px)`; 
+                        gameArea.appendChild(itemObj);
+                    } else if (rand < 0.55) {
+                        // ПТИЦА (Может лететь высоко или низко!)
+                        const isHighBird = Math.random() > 0.5;
                         const birdObj = document.createElement('div'); birdObj.className = 'obstacle bird'; birdObj.innerText = '🦅';
-                        birdObj.style.left = gameArea.offsetWidth + 'px'; birdObj.style.bottom = 'calc(20vh + 90px)'; 
+                        birdObj.style.left = gameArea.offsetWidth + 'px'; 
+                        birdObj.style.bottom = isHighBird ? 'calc(20vh + 90px)' : 'calc(20vh + 15px)'; 
                         gameArea.appendChild(birdObj);
                     } else {
                         const obs = document.createElement('div');
@@ -537,14 +544,24 @@
                 if (l < -200) c.remove();
             });
 
-            document.querySelectorAll('.collectible').forEach(item => {
+            // ОБРАБОТКА СТОЛКНОВЕНИЙ В ВОЗДУХЕ (Сердечки, Звезды, Бомбы)
+            document.querySelectorAll('.collectible:not(.smashed)').forEach(item => {
                 let currentLeft = parseFloat(item.style.left); currentLeft -= gameSpeed; item.style.left = currentLeft + 'px';
                 const iRect = item.getBoundingClientRect();
+                
                 if (syomaRect.right > iRect.left && syomaRect.left < iRect.right && syomaRect.bottom > iRect.top && syomaRect.top < iRect.bottom) {
-                    if (item.classList.contains('star')) {
+                    
+                    if (item.classList.contains('bomb')) {
+                        hitObstacle(item);
+                        if (!item.classList.contains('smashed')) item.remove(); // Взрывается о лицо
+                    } 
+                    else if (item.classList.contains('star')) {
                         superMode = true; superTimer = 350; syomaInner.classList.add('super-mode'); soundPowerup();
-                    } else { score++; updateHUD(); soundCoin(); }
-                    item.remove();
+                        item.remove();
+                    } else { 
+                        score++; updateHUD(); soundCoin(); 
+                        item.remove();
+                    }
                     try { if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); } catch(e){}
                 }
                 if (currentLeft < -60) item.remove();
@@ -559,7 +576,6 @@
                 if (currentLeft < -150) obs.remove();
             });
 
-            // --- БЛОК ФИНАЛА ---
             if (distance >= finishDistance) {
                 vikaEl.style.display = 'flex';
                 let vikaLeft = vikaEl.offsetLeft;
@@ -575,10 +591,9 @@
                         let currentLeft = parseFloat(syomaEl.style.left || 50);
                         syomaEl.style.left = (currentLeft + 8) + 'px';
                     } else if (!isFinaleTriggered) {
-                        // ЭТОТ БЛОК ТЕПЕРЬ СРАБАТЫВАЕТ СТРОГО 1 РАЗ
                         isFinaleTriggered = true;
                         triggerFinale();
-                        return; // Полностью выходим из функции
+                        return; 
                     }
                 }
             }
