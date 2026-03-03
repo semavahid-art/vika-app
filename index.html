@@ -135,7 +135,7 @@
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85); z-index: 10001;
             align-items: center; justify-content: center; flex-direction: column;
-            opacity: 0; transition: opacity 0.8s ease; pointer-events: auto;
+            opacity: 0; transition: opacity 0.5s ease; pointer-events: auto;
         }
         
         .finale-card {
@@ -144,9 +144,12 @@
             text-align: center; box-shadow: 0 0 30px rgba(255, 77, 109, 0.8);
             width: 85%; max-width: 350px;
             transform: scale(0);
-            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         
+        .pop-animation {
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
         @keyframes popIn {
             0% { transform: scale(0); }
             100% { transform: scale(1); }
@@ -217,7 +220,7 @@
         </div>
 
         <div id="finale-modal">
-            <div class="finale-card">
+            <div class="finale-card" id="finale-card">
                 <div class="finale-icon">👸🏼❤️👦🏻</div>
                 <div class="finale-title">МОЕЙ ЛЮБИМОЙ ВИКЕ</div>
                 <div class="finale-message" id="dynamic-love-message">Текст загружается...</div>
@@ -254,7 +257,7 @@
         }
 
         function triggerKissVisuals() {
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            try { if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
             const kiss = document.createElement('div'); kiss.innerHTML = '💋'; kiss.className = 'big-kiss';
             document.body.appendChild(kiss); setTimeout(() => kiss.remove(), 800);
             for (let i = 0; i < 12; i++) setTimeout(createHeartEffect, i * 40);
@@ -265,7 +268,11 @@
             try { tg.sendData('Поцелуй отправлен! 💋'); } catch(e) {}
         }
 
-        function sendMsg(text) { if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium'); for (let i = 0; i < 6; i++) setTimeout(createHeartEffect, i * 60); try { tg.sendData(text); } catch(e) {} }
+        function sendMsg(text) { 
+            try { if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
+            for (let i = 0; i < 6; i++) setTimeout(createHeartEffect, i * 60); 
+            try { tg.sendData(text); } catch(e) {} 
+        }
 
         const startDate = new Date(2023, 8, 26); 
         function updateTimer() {
@@ -277,21 +284,24 @@
         /* ================= ЗВУКИ ================= */
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playTone(freq, type, duration) {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
-            osc.stop(audioCtx.currentTime + duration);
+            try {
+                if(audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+                osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {} // Защита от краша звука
         }
         function soundJump() { playTone(400, 'square', 0.1); setTimeout(()=>playTone(600, 'square', 0.15), 50); }
         function soundCoin() { playTone(900, 'sine', 0.1); setTimeout(()=>playTone(1200, 'sine', 0.15), 80); }
         function soundHit()  { playTone(200, 'sawtooth', 0.2); setTimeout(()=>playTone(150, 'sawtooth', 0.3), 150); }
         function soundPowerup() { playTone(400, 'sine', 0.1); setTimeout(()=>playTone(600, 'sine', 0.1), 100); setTimeout(()=>playTone(800, 'sine', 0.3), 200); }
         function soundSmash() { playTone(150, 'square', 0.1); setTimeout(()=>playTone(100, 'sawtooth', 0.2), 50); }
+        function soundWin()  { playTone(500, 'square', 0.2); setTimeout(()=>playTone(650, 'square', 0.2), 200); setTimeout(()=>playTone(800, 'square', 0.4), 400); }
 
         /* ================= ЛОГИКА ИГРЫ ================= */
-        let gameActive = false, isFinishing = false, reqId;
+        let gameActive = false, isFinishing = false, isFinaleTriggered = false, reqId;
         let syomaY = 0, velocityY = 0, gravity = 0.7, jumpPower = 14.5;
         let gameSpeed = 5.5, maxSpeed = 10, distance = 0, finishDistance = 20000; 
         let spawnTimer = 0, cloudTimer = 0, bgPos = 0;
@@ -327,14 +337,15 @@
 
         function startGame() {
             try { tg.requestFullscreen(); } catch(e) {}
-            if(audioCtx.state === 'suspended') audioCtx.resume();
+            try { if(audioCtx.state === 'suspended') audioCtx.resume(); } catch(e) {}
             applyDayNightTheme(); 
 
             overlay.style.display = 'flex';
             document.getElementById('finale-modal').style.display = 'none';
+            document.getElementById('finale-card').classList.remove('pop-animation');
             
             syomaY = 0; velocityY = 0; distance = 0; spawnTimer = 0; gameSpeed = 5.5; bgPos = 0;
-            score = 0; lives = 3; invincible = false; isFinishing = false; superMode = false; superTimer = 0;
+            score = 0; lives = 3; invincible = false; isFinishing = false; isFinaleTriggered = false; superMode = false; superTimer = 0;
             updateHUD();
 
             syomaEl.style.bottom = '20vh'; syomaEl.style.left = '50px';
@@ -352,7 +363,7 @@
         function handleTap(e) {
             if (e.target.id === 'close-btn' || e.target.closest('#finale-modal')) return;
             e.preventDefault(); 
-            if(audioCtx.state === 'suspended') audioCtx.resume();
+            try { if(audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){}
             instruction.style.opacity = '0'; 
 
             if (!gameActive || isFinishing) return;
@@ -361,7 +372,7 @@
                 velocityY = jumpPower;
                 syomaInner.classList.remove('running');
                 soundJump();
-                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+                try { if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light'); } catch(e){}
             }
         }
 
@@ -375,14 +386,18 @@
             gameActive = false; cancelAnimationFrame(reqId); overlay.style.display = 'none';
         }
 
+        // КНОПКА ФИНАЛА
         function submitScore(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             document.getElementById('finale-modal').style.display = 'none'; 
             stopGame();
             triggerKissVisuals(); 
             try { 
-                tg.sendData(`Сёма собрал ${score} сердец, пробежал огромный путь и поцеловал Вику! 🏃🏻‍♂️❤️👸🏼`); 
-            } catch(e){}
+                tg.sendData(`Сёма собрал ${score} сердец, преодолел огромный путь и обнял Вику! 🏃🏻‍♂️❤️👸🏼`); 
+            } catch(err) {
+                // Если не сработает sendData, просто закроем окно
+                try { tg.close(); } catch(e){}
+            }
         }
 
         document.getElementById('final-send-btn').addEventListener('click', submitScore);
@@ -392,13 +407,13 @@
             if (superMode) {
                 obs.classList.add('smashed');
                 score += 5; updateHUD(); soundSmash();
-                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
+                try { if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy'); } catch(e){}
                 return;
             }
 
             if (invincible || isFinishing) return;
             lives--; updateHUD(); soundHit();
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+            try { if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error'); } catch(e){}
             
             if (lives <= 0) {
                 gameActive = false; syomaInner.classList.remove('running');
@@ -408,6 +423,45 @@
                 invincible = true; syomaInner.classList.add('invincible');
                 setTimeout(() => { invincible = false; syomaInner.classList.remove('invincible'); }, 1500);
             }
+        }
+
+        // БЕЗОПАСНАЯ ФУНКЦИЯ ЗАВЕРШЕНИЯ (вызывается 1 раз)
+        function triggerFinale() {
+            gameActive = false; // ЖЕСТКАЯ ОСТАНОВКА ЦИКЛА
+            syomaInner.classList.remove('running');
+            syomaInner.classList.remove('super-mode');
+            instruction.innerText = "ПРИНЦЕССА СПАСЕНА! ❤️"; instruction.style.opacity = '1';
+            
+            // Наклон для поцелуя
+            syomaInner.className = 'character lean-right';
+            document.getElementById('vika-inner').className = 'character lean-left';
+            soundWin();
+
+            // Очистка экрана от лишнего мусора, чтобы не висло
+            document.querySelectorAll('.obstacle, .collectible, .cloud, .star').forEach(e => e.remove());
+
+            // Сердечко между ними
+            let vRect = vikaEl.getBoundingClientRect();
+            const mh = document.createElement('div');
+            mh.className = 'mini-heart'; mh.innerText = '💗';
+            mh.style.position = 'absolute'; mh.style.left = (vRect.left - 20) + 'px';
+            mh.style.bottom = 'calc(20vh + 60px)'; mh.style.fontSize = '45px';
+            mh.style.zIndex = '5'; mh.style.animation = 'miniHeartFly 1.5s ease-out forwards';
+            gameArea.appendChild(mh);
+
+            // Рандомный текст
+            const randomMessage = loveMessages[Math.floor(Math.random() * loveMessages.length)];
+            document.getElementById('dynamic-love-message').innerText = randomMessage;
+
+            // Показываем открытку через секунду
+            setTimeout(() => {
+                const modal = document.getElementById('finale-modal');
+                modal.style.display = 'flex';
+                // Принудительно заставляем браузер отрисовать modal перед изменением opacity
+                void modal.offsetWidth;
+                modal.style.opacity = '1';
+                document.getElementById('finale-card').classList.add('pop-animation');
+            }, 1000);
         }
 
         function gameLoop() {
@@ -422,10 +476,7 @@
 
             if (superMode) {
                 superTimer--;
-                if (superTimer <= 0) {
-                    superMode = false;
-                    syomaInner.classList.remove('super-mode');
-                }
+                if (superTimer <= 0) { superMode = false; syomaInner.classList.remove('super-mode'); }
             }
 
             if (!isFinishing) {
@@ -457,33 +508,23 @@
                 if (spawnTimer > 60 + Math.random() * 50) { 
                     const rand = Math.random();
                     if (rand < 0.05 && !superMode) {
-                        const star = document.createElement('div');
-                        star.className = 'collectible star'; star.innerText = '⭐';
-                        star.style.left = gameArea.offsetWidth + 'px';
-                        star.style.bottom = `calc(20vh + ${70 + Math.random() * 60}px)`; 
+                        const star = document.createElement('div'); star.className = 'collectible star'; star.innerText = '⭐';
+                        star.style.left = gameArea.offsetWidth + 'px'; star.style.bottom = `calc(20vh + ${70 + Math.random() * 60}px)`; 
                         gameArea.appendChild(star);
                     } 
                     else if (rand < 0.3) {
-                        const heartObj = document.createElement('div');
-                        heartObj.className = 'collectible'; heartObj.innerText = '💖';
-                        heartObj.style.left = gameArea.offsetWidth + 'px';
-                        heartObj.style.bottom = `calc(20vh + ${70 + Math.random() * 70}px)`; 
+                        const heartObj = document.createElement('div'); heartObj.className = 'collectible'; heartObj.innerText = '💖';
+                        heartObj.style.left = gameArea.offsetWidth + 'px'; heartObj.style.bottom = `calc(20vh + ${70 + Math.random() * 70}px)`; 
                         gameArea.appendChild(heartObj);
                     } else if (rand < 0.5) {
-                        const birdObj = document.createElement('div');
-                        birdObj.className = 'obstacle bird'; birdObj.innerText = '🦅';
-                        birdObj.style.left = gameArea.offsetWidth + 'px';
-                        birdObj.style.bottom = 'calc(20vh + 90px)'; 
+                        const birdObj = document.createElement('div'); birdObj.className = 'obstacle bird'; birdObj.innerText = '🦅';
+                        birdObj.style.left = gameArea.offsetWidth + 'px'; birdObj.style.bottom = 'calc(20vh + 90px)'; 
                         gameArea.appendChild(birdObj);
                     } else {
                         const obs = document.createElement('div');
-                        if (Math.random() > 0.5) {
-                            obs.className = 'obstacle pipe'; obs.style.height = (30 + Math.random() * 45) + 'px'; 
-                        } else {
-                            obs.className = 'obstacle goomba'; obs.innerText = ['🍄','🐢','🌵'][Math.floor(Math.random()*3)];
-                        }
-                        obs.style.left = gameArea.offsetWidth + 'px';
-                        gameArea.appendChild(obs);
+                        if (Math.random() > 0.5) { obs.className = 'obstacle pipe'; obs.style.height = (30 + Math.random() * 45) + 'px'; } 
+                        else { obs.className = 'obstacle goomba'; obs.innerText = ['🍄','🐢','🌵'][Math.floor(Math.random()*3)]; }
+                        obs.style.left = gameArea.offsetWidth + 'px'; gameArea.appendChild(obs);
                     }
                     spawnTimer = 0;
                 }
@@ -497,40 +538,28 @@
             });
 
             document.querySelectorAll('.collectible').forEach(item => {
-                let currentLeft = parseFloat(item.style.left);
-                currentLeft -= gameSpeed; item.style.left = currentLeft + 'px';
+                let currentLeft = parseFloat(item.style.left); currentLeft -= gameSpeed; item.style.left = currentLeft + 'px';
                 const iRect = item.getBoundingClientRect();
-                
                 if (syomaRect.right > iRect.left && syomaRect.left < iRect.right && syomaRect.bottom > iRect.top && syomaRect.top < iRect.bottom) {
                     if (item.classList.contains('star')) {
-                        superMode = true; superTimer = 350;
-                        syomaInner.classList.add('super-mode');
-                        soundPowerup();
-                    } else {
-                        score++; updateHUD(); soundCoin(); 
-                    }
+                        superMode = true; superTimer = 350; syomaInner.classList.add('super-mode'); soundPowerup();
+                    } else { score++; updateHUD(); soundCoin(); }
                     item.remove();
-                    if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+                    try { if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); } catch(e){}
                 }
                 if (currentLeft < -60) item.remove();
             });
 
             document.querySelectorAll('.obstacle:not(.smashed)').forEach(obs => {
-                let currentLeft = parseFloat(obs.style.left);
-                currentLeft -= gameSpeed; obs.style.left = currentLeft + 'px';
-                
+                let currentLeft = parseFloat(obs.style.left); currentLeft -= gameSpeed; obs.style.left = currentLeft + 'px';
                 const obsRect = obs.getBoundingClientRect();
-                if (
-                    syomaRect.right - 15 > obsRect.left + 5 && 
-                    syomaRect.left + 15 < obsRect.right - 5 && 
-                    syomaRect.bottom - 10 > obsRect.top + 10 && 
-                    syomaRect.top + 15 < obsRect.bottom - 10
-                ) {
+                if (syomaRect.right - 15 > obsRect.left + 5 && syomaRect.left + 15 < obsRect.right - 5 && syomaRect.bottom - 10 > obsRect.top + 10 && syomaRect.top + 15 < obsRect.bottom - 10) {
                     hitObstacle(obs);
                 }
                 if (currentLeft < -150) obs.remove();
             });
 
+            // --- БЛОК ФИНАЛА ---
             if (distance >= finishDistance) {
                 vikaEl.style.display = 'flex';
                 let vikaLeft = vikaEl.offsetLeft;
@@ -545,33 +574,11 @@
                     if (sRect.right < vRect.left + 5) {
                         let currentLeft = parseFloat(syomaEl.style.left || 50);
                         syomaEl.style.left = (currentLeft + 8) + 'px';
-                    } else if (gameActive) {
-                        gameActive = false; 
-                        syomaInner.classList.remove('running');
-                        syomaInner.classList.remove('super-mode');
-                        instruction.innerText = "ПРИНЦЕССА СПАСЕНА! ❤️"; instruction.style.opacity = '1';
-                        
-                        syomaInner.className = 'character lean-right';
-                        document.getElementById('vika-inner').className = 'character lean-left';
-                        soundWin();
-
-                        const mh = document.createElement('div');
-                        mh.className = 'mini-heart'; mh.innerText = '💗';
-                        mh.style.position = 'absolute'; mh.style.left = (vRect.left - 20) + 'px';
-                        mh.style.bottom = 'calc(20vh + 60px)'; mh.style.fontSize = '45px';
-                        mh.style.zIndex = '5'; mh.style.animation = 'miniHeartFly 1.5s ease-out forwards';
-                        gameArea.appendChild(mh);
-
-                        // Устанавливаем рандомный текст
-                        const randomMessage = loveMessages[Math.floor(Math.random() * loveMessages.length)];
-                        document.getElementById('dynamic-love-message').innerText = randomMessage;
-
-                        setTimeout(() => {
-                            const modal = document.getElementById('finale-modal');
-                            modal.style.display = 'flex';
-                            setTimeout(() => { modal.style.opacity = '1'; }, 50);
-                        }, 1200);
-                        return;
+                    } else if (!isFinaleTriggered) {
+                        // ЭТОТ БЛОК ТЕПЕРЬ СРАБАТЫВАЕТ СТРОГО 1 РАЗ
+                        isFinaleTriggered = true;
+                        triggerFinale();
+                        return; // Полностью выходим из функции
                     }
                 }
             }
