@@ -46,7 +46,7 @@
         #game-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: #5C94FC; z-index: 9990; touch-action: none; overflow: hidden;
-            transition: background 1s ease; /* Плавная смена неба */
+            transition: background 1s ease;
         }
         #game-area { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; }
         
@@ -56,7 +56,6 @@
             background-repeat: repeat-x; z-index: 0; transition: filter 1s ease;
         }
         
-        /* Облака и пасхалки */
         .cloud { position: absolute; font-size: 50px; opacity: 0.8; z-index: 0; }
         .cloud-text { 
             font-size: 22px; color: rgba(255,255,255,0.9); font-weight: bold; 
@@ -86,11 +85,9 @@
         .legs { display: flex; gap: 8px; z-index: 1; margin-top: -4px; position: relative; }
         .leg { width: 9px; height: 22px; border-radius: 4px; transform-origin: top center; }
 
-        /* Сёма */
         #syoma-inner .body { background: #c62828; width: 26px; height: 30px; border-radius: 8px; z-index: 3; margin-top: -8px; box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3); } 
         #syoma-inner .arm { background: #c62828; } #syoma-inner .leg { background: #111; } 
         
-        /* Вика (Принцесса) */
         #vika-inner .body { background: #ff66b2; width: 38px; height: 42px; margin-top: -10px; z-index: 3; clip-path: polygon(25% 0%, 75% 0%, 100% 100%, 0% 100%); box-shadow: inset -3px -3px 6px rgba(0,0,0,0.2); } 
         #vika-inner .arm { background: #ff99cc; top: 52px; width: 7px; z-index: 2; } 
         #vika-inner .arm-l { left: -2px; } #vika-inner .arm-r { right: -2px; }
@@ -106,19 +103,25 @@
         
         .invincible { animation: flicker 0.2s infinite; }
         @keyframes flicker { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        
+        /* СУПЕР-РЕЖИМ (ЗВЕЗДОЧКА) */
+        .super-mode { animation: rainbowGlow 0.4s infinite linear !important; }
+        @keyframes rainbowGlow { 0% { filter: drop-shadow(0 0 10px red) hue-rotate(0deg); } 50% { filter: drop-shadow(0 0 20px yellow) hue-rotate(180deg); } 100% { filter: drop-shadow(0 0 10px red) hue-rotate(360deg); } }
+        
+        /* Анимация сбитых препятствий */
+        .smashed { animation: smash 0.6s forwards linear; pointer-events: none; }
+        @keyframes smash { 0% { transform: translate(0, 0) rotate(0deg); opacity: 1; } 100% { transform: translate(150px, -300px) rotate(360deg); opacity: 0; } }
+
         .lean-right { transform: translateX(15px) rotate(20deg) !important; }
         .lean-left { transform: translateX(-15px) rotate(-20deg) !important; }
         @keyframes miniHeartFly { 0% { opacity: 0; transform: translateY(0) scale(0.5); } 20% { opacity: 1; transform: translateY(-12px) scale(1.2); } 100% { opacity: 0; transform: translateY(-90px) scale(1.5); } }
 
         #syoma { left: 50px; } #vika { left: 100%; display: none; }
         
-        /* Объекты */
         .obstacle { position: absolute; bottom: 20vh; z-index: 2; }
         .pipe { width: 46px; background: linear-gradient(to right, #00A800, #55FF55 30%, #00A800 90%); border: 3px solid #000; border-bottom: none; }
         .pipe::after { content: ''; position: absolute; top: -12px; left: -6px; width: 52px; height: 12px; background: linear-gradient(to right, #00A800, #55FF55 30%, #00A800 90%); border: 3px solid #000; }
         .goomba { font-size: 38px; line-height: 38px; }
-        
-        /* Птицы - Летят высоко */
         .bird { font-size: 45px; line-height: 45px; animation: birdFlap 0.4s infinite alternate linear; }
         @keyframes birdFlap { 0% { transform: translateY(-8px); } 100% { transform: translateY(8px); } }
 
@@ -128,6 +131,24 @@
         #instruction { position: absolute; top: 30vh; width: 100%; text-align: center; font-size: 24px; color: #fff; font-weight: 900; text-shadow: 3px 3px 0 #000; z-index: 5; opacity: 1; transition: opacity 0.5s;}
         .close-game { position: absolute; top: 15px; right: 15px; background: #e52521; border: 3px solid #000; color: white; padding: 8px 12px; border-radius: 10px; font-size: 16px; font-weight: bold; z-index: 10000; pointer-events: auto; cursor: pointer; box-shadow: 2px 2px 0 #000; }
         .close-game:active { transform: translate(2px, 2px); box-shadow: none; }
+
+        /* --- ГРАНД ФИНАЛ --- */
+        #finale-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.95); z-index: 10001;
+            align-items: center; justify-content: center; flex-direction: column;
+            opacity: 0; transition: opacity 1.5s ease;
+        }
+        .finale-photo {
+            width: 85%; max-width: 350px; border-radius: 20px;
+            border: 6px solid #ff4d6d; box-shadow: 0 0 30px #ff4d6d, inset 0 0 20px rgba(0,0,0,0.5);
+            animation: pulseGlow 2s infinite alternate;
+        }
+        .finale-text {
+            color: #ff99cc; font-size: 32px; font-weight: 900; margin-top: 25px;
+            text-shadow: 2px 2px 5px #000, 0 0 10px #ff4d6d; text-align: center;
+        }
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 20px #ff4d6d; } 100% { box-shadow: 0 0 50px #ff66b2; } }
     </style>
 </head>
 <body>
@@ -161,7 +182,7 @@
         <div id="game-area">
             <div class="mountains" id="mountains"></div>
             <div class="ground" id="ground"></div>
-            <div id="instruction">Тапай, чтобы прыгать!<br><span style="font-size: 16px;">(Орлов лучше переждать внизу)</span></div>
+            <div id="instruction">Тапай, чтобы прыгать!<br><span style="font-size: 16px;">(Лови ⭐ для супер-силы!)</span></div>
             
             <div id="syoma" class="sprite">
                 <div id="syoma-inner" class="character">
@@ -180,6 +201,11 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="finale-modal" onclick="closeFinale()">
+        <img src="https://i.postimg.cc/HnMVCPYn/photo-3-2026-02-28-17-22-30.jpg" alt="Мы" class="finale-photo">
+        <div class="finale-text">Я люблю тебя<br>бесконечно! ❤️</div>
     </div>
 
     <script>
@@ -213,7 +239,7 @@
         }
         setInterval(updateTimer, 1000); updateTimer();
 
-        /* ================= ЗВУКОВОЙ ДВИЖОК ================= */
+        /* ================= ЗВУКИ ================= */
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playTone(freq, type, duration) {
             if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -226,7 +252,8 @@
         function soundJump() { playTone(400, 'square', 0.1); setTimeout(()=>playTone(600, 'square', 0.15), 50); }
         function soundCoin() { playTone(900, 'sine', 0.1); setTimeout(()=>playTone(1200, 'sine', 0.15), 80); }
         function soundHit()  { playTone(200, 'sawtooth', 0.2); setTimeout(()=>playTone(150, 'sawtooth', 0.3), 150); }
-        function soundWin()  { playTone(500, 'square', 0.2); setTimeout(()=>playTone(650, 'square', 0.2), 200); setTimeout(()=>playTone(800, 'square', 0.4), 400); }
+        function soundPowerup() { playTone(400, 'sine', 0.1); setTimeout(()=>playTone(600, 'sine', 0.1), 100); setTimeout(()=>playTone(800, 'sine', 0.3), 200); }
+        function soundSmash() { playTone(150, 'square', 0.1); setTimeout(()=>playTone(100, 'sawtooth', 0.2), 50); }
 
         /* ================= ЛОГИКА ИГРЫ ================= */
         let gameActive = false, isFinishing = false, reqId;
@@ -234,6 +261,9 @@
         let gameSpeed = 5.5, maxSpeed = 10, distance = 0, finishDistance = 15000; 
         let spawnTimer = 0, cloudTimer = 0, bgPos = 0;
         let score = 0, lives = 3, invincible = false;
+        
+        let superMode = false;
+        let superTimer = 0;
 
         const overlay = document.getElementById('game-overlay');
         const syomaEl = document.getElementById('syoma');
@@ -250,14 +280,12 @@
             document.getElementById('progress-bar').style.width = p + '%';
         }
 
-        // ПРОВЕРКА ДНЯ И НОЧИ
         function applyDayNightTheme() {
             const hour = new Date().getHours();
-            const isNight = hour >= 20 || hour < 6; // С 20:00 до 5:59 ночь
-            
+            const isNight = hour >= 20 || hour < 6; 
             if (isNight) {
                 overlay.style.background = 'linear-gradient(to bottom, #0B1021, #1B2735)';
-                mountains.style.filter = 'brightness(0.2) sepia(100%)'; // Горы темнеют
+                mountains.style.filter = 'brightness(0.2) sepia(100%)';
             } else {
                 overlay.style.background = '#5C94FC';
                 mountains.style.filter = 'none';
@@ -267,20 +295,19 @@
         function startGame() {
             try { tg.requestFullscreen(); } catch(e) {}
             if(audioCtx.state === 'suspended') audioCtx.resume();
-            
-            applyDayNightTheme(); // Применяем тему при запуске
+            applyDayNightTheme(); 
 
             overlay.style.display = 'flex';
             syomaY = 0; velocityY = 0; distance = 0; spawnTimer = 0; gameSpeed = 5.5; bgPos = 0;
-            score = 0; lives = 3; invincible = false; isFinishing = false;
+            score = 0; lives = 3; invincible = false; isFinishing = false; superMode = false; superTimer = 0;
             updateHUD();
 
             syomaEl.style.bottom = '20vh'; syomaEl.style.left = '50px';
             syomaInner.className = 'character running'; 
             vikaEl.style.display = 'none'; vikaEl.style.left = '100%';
             
-            document.querySelectorAll('.obstacle, .collectible, .cloud').forEach(e => e.remove());
-            instruction.innerHTML = "Тапай, чтобы прыгать!<br><span style='font-size: 16px;'>(Орлов лучше переждать внизу)</span>";
+            document.querySelectorAll('.obstacle, .collectible, .cloud, .star').forEach(e => e.remove());
+            instruction.innerHTML = "Тапай, чтобы прыгать!<br><span style='font-size: 16px;'>(Лови ⭐ для супер-силы!)</span>";
             instruction.style.opacity = '1';
             
             gameActive = true;
@@ -313,7 +340,19 @@
             gameActive = false; cancelAnimationFrame(reqId); overlay.style.display = 'none';
         }
 
-        function hitObstacle() {
+        function closeFinale() {
+            document.getElementById('finale-modal').style.opacity = '0';
+            setTimeout(() => { document.getElementById('finale-modal').style.display = 'none'; }, 1000);
+        }
+
+        function hitObstacle(obs) {
+            if (superMode) {
+                obs.classList.add('smashed');
+                score += 5; updateHUD(); soundSmash();
+                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
+                return;
+            }
+
             if (invincible || isFinishing) return;
             lives--; updateHUD(); soundHit();
             if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
@@ -338,19 +377,26 @@
             }
             syomaEl.style.bottom = `calc(20vh + ${syomaY}px)`;
 
+            if (superMode) {
+                superTimer--;
+                if (superTimer <= 0) {
+                    superMode = false;
+                    syomaInner.classList.remove('super-mode');
+                }
+            }
+
             if (!isFinishing) {
                 distance += gameSpeed; 
-                if (gameSpeed < maxSpeed) gameSpeed += 0.0003; 
+                let currentMax = superMode ? maxSpeed + 2 : maxSpeed;
+                if (gameSpeed < currentMax) gameSpeed += 0.0003; 
                 bgPos += (gameSpeed * 0.2); 
                 mountains.style.backgroundPositionX = -bgPos + 'px';
                 updateHUD();
             }
 
-            // ПАСХАЛКИ В ОБЛАКАХ
             cloudTimer++;
             if(cloudTimer > 160) {
                 const cloud = document.createElement('div'); 
-                // 30% шанс на текстовое облако
                 if (Math.random() < 0.3) {
                     const texts = ['Я тебя люблю ❤️', 'Скучаю 🥺', 'Жду тебя 🥰', 'Ты моё всё ✨'];
                     cloud.className = 'cloud cloud-text';
@@ -363,27 +409,31 @@
                 gameArea.appendChild(cloud); cloudTimer = 0;
             }
 
-            // СПАВН ПРЕПЯТСТВИЙ (ВКЛЮЧАЯ ПТИЦ)
             if (distance < finishDistance - 800 && !isFinishing) {
                 spawnTimer++;
                 if (spawnTimer > 60 + Math.random() * 50) { 
                     const rand = Math.random();
-                    if (rand < 0.3) {
-                        // Сердечко
+                    
+                    if (rand < 0.05 && !superMode) {
+                        const star = document.createElement('div');
+                        star.className = 'collectible star'; star.innerText = '⭐';
+                        star.style.left = gameArea.offsetWidth + 'px';
+                        star.style.bottom = `calc(20vh + ${70 + Math.random() * 60}px)`; 
+                        gameArea.appendChild(star);
+                    } 
+                    else if (rand < 0.3) {
                         const heartObj = document.createElement('div');
                         heartObj.className = 'collectible'; heartObj.innerText = '💖';
                         heartObj.style.left = gameArea.offsetWidth + 'px';
                         heartObj.style.bottom = `calc(20vh + ${70 + Math.random() * 70}px)`; 
                         gameArea.appendChild(heartObj);
                     } else if (rand < 0.5) {
-                        // ПТИЦА (ЛЕТИТ ВЫСОКО)
                         const birdObj = document.createElement('div');
                         birdObj.className = 'obstacle bird'; birdObj.innerText = '🦅';
                         birdObj.style.left = gameArea.offsetWidth + 'px';
-                        birdObj.style.bottom = 'calc(20vh + 90px)'; // Высота головы при прыжке
+                        birdObj.style.bottom = 'calc(20vh + 90px)'; 
                         gameArea.appendChild(birdObj);
                     } else {
-                        // Наземные преграды
                         const obs = document.createElement('div');
                         if (Math.random() > 0.5) {
                             obs.className = 'obstacle pipe'; obs.style.height = (30 + Math.random() * 45) + 'px'; 
@@ -399,43 +449,46 @@
 
             const syomaRect = syomaInner.getBoundingClientRect();
 
-            // Движение облаков
             document.querySelectorAll('.cloud').forEach(c => {
                 let l = parseFloat(c.style.left); l -= (gameSpeed * 0.4); c.style.left = l + 'px';
                 if (l < -200) c.remove();
             });
 
-            // Сбор сердечек
             document.querySelectorAll('.collectible').forEach(item => {
                 let currentLeft = parseFloat(item.style.left);
                 currentLeft -= gameSpeed; item.style.left = currentLeft + 'px';
                 const iRect = item.getBoundingClientRect();
+                
                 if (syomaRect.right > iRect.left && syomaRect.left < iRect.right && syomaRect.bottom > iRect.top && syomaRect.top < iRect.bottom) {
-                    score++; updateHUD(); soundCoin(); item.remove();
+                    if (item.classList.contains('star')) {
+                        superMode = true; superTimer = 350;
+                        syomaInner.classList.add('super-mode');
+                        soundPowerup();
+                    } else {
+                        score++; updateHUD(); soundCoin(); 
+                    }
+                    item.remove();
                     if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
                 }
                 if (currentLeft < -60) item.remove();
             });
 
-            // УЛУЧШЕННАЯ СИСТЕМА СТОЛКНОВЕНИЙ
-            document.querySelectorAll('.obstacle').forEach(obs => {
+            document.querySelectorAll('.obstacle:not(.smashed)').forEach(obs => {
                 let currentLeft = parseFloat(obs.style.left);
                 currentLeft -= gameSpeed; obs.style.left = currentLeft + 'px';
                 
                 const obsRect = obs.getBoundingClientRect();
-                // Честная проверка (и по бокам, и по верху/низу)
-                if (!invincible && 
+                if (
                     syomaRect.right - 15 > obsRect.left + 5 && 
                     syomaRect.left + 15 < obsRect.right - 5 && 
                     syomaRect.bottom - 10 > obsRect.top + 10 && 
                     syomaRect.top + 15 < obsRect.bottom - 10
                 ) {
-                    hitObstacle();
+                    hitObstacle(obs);
                 }
-                if (currentLeft < -80) obs.remove();
+                if (currentLeft < -150) obs.remove();
             });
 
-            // ФИНАЛ: Вика
             if (distance >= finishDistance) {
                 vikaEl.style.display = 'flex';
                 let vikaLeft = vikaEl.offsetLeft;
@@ -452,6 +505,7 @@
                     } else if (gameActive) {
                         gameActive = false; 
                         syomaInner.classList.remove('running');
+                        syomaInner.classList.remove('super-mode');
                         instruction.innerText = "ПРИНЦЕССА СПАСЕНА! ❤️"; instruction.style.opacity = '1';
                         
                         syomaInner.className = 'character lean-right';
@@ -465,10 +519,13 @@
                         mh.style.zIndex = '5'; mh.style.animation = 'miniHeartFly 1.5s ease-out forwards';
                         gameArea.appendChild(mh);
 
+                        // ФИНАЛ: ФОТОГРАФИЯ
                         setTimeout(() => {
-                            stopGame(); sendKiss();
-                            try { tg.sendData(`Сёма собрал ${score} сердец, преодолел все преграды и поцеловал Вику! 🏃🏻‍♂️❤️👸🏼`); } catch(e){}
-                        }, 2000);
+                            const modal = document.getElementById('finale-modal');
+                            modal.style.display = 'flex';
+                            setTimeout(() => { modal.style.opacity = '1'; }, 100);
+                            try { tg.sendData(`Сёма собрал ${score} сердец, победил всех птиц и поцеловал Вику! 🏃🏻‍♂️❤️👸🏼`); } catch(e){}
+                        }, 1800);
                         return;
                     }
                 }
