@@ -75,15 +75,12 @@
         /* --- СТИЛИ ИГРЫ МАРИО --- */
         #game-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #5C94FC; /* Классическое небо Марио */
-            z-index: 9990; touch-action: none; overflow: hidden;
+            background: #5C94FC; z-index: 9990; touch-action: none; overflow: hidden;
         }
         #game-area {
-            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
-            pointer-events: none; 
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; 
         }
         
-        /* Пиксельная земля */
         .ground {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 20vh;
             background-color: #c84c0c;
@@ -92,17 +89,14 @@
                 linear-gradient(45deg, #983808 25%, transparent 25%, transparent 75%, #983808 75%, #983808);
             background-size: 20px 20px;
             background-position: 0 0, 10px 10px;
-            border-top: 14px solid #00a800; /* Зеленая трава */
-            z-index: 1;
+            border-top: 14px solid #00a800; z-index: 1;
         }
         
         .sprite { position: absolute; bottom: 20vh; z-index: 3; display: flex; justify-content: center; }
         
-        /* Персонажи */
         .character {
             display: flex; flex-direction: column; align-items: center; 
-            transform-origin: bottom center; transition: transform 0.4s ease;
-            position: relative;
+            transform-origin: bottom center; transition: transform 0.4s ease; position: relative;
         }
         .head { font-size: 50px; line-height: 50px; z-index: 4; position: relative; }
         .body { width: 26px; height: 32px; border-radius: 10px; z-index: 3; margin-top: -8px; position: relative; box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3); }
@@ -114,26 +108,22 @@
         .legs { display: flex; gap: 8px; z-index: 1; margin-top: -4px; position: relative; }
         .leg { width: 9px; height: 22px; border-radius: 4px; transform-origin: top center; }
 
-        /* Цвета Сёмы (Марио) */
-        #syoma-inner .body { background: #049cd8; } /* Синий комбинезон */
-        #syoma-inner .arm { background: #e52521; } /* Красная рубашка */
+        /* Цвета Сёмы */
+        #syoma-inner .body { background: #049cd8; } 
+        #syoma-inner .arm { background: #e52521; } 
         #syoma-inner .leg { background: #049cd8; }
         
-        /* Цвета Вики (Принцесса Пич) */
-        #vika-inner .body { background: #fca0b8; border-radius: 15px 15px 0 0; width: 34px; height: 38px; } /* Платье */
+        /* Цвета Вики */
+        #vika-inner .body { background: #fca0b8; border-radius: 15px 15px 0 0; width: 34px; height: 38px; } 
         #vika-inner .arm { background: #fca0b8; top: 52px; }
-        #vika-inner .legs { display: none; } /* У принцессы длинное платье, ног не видно */
+        #vika-inner .legs { display: none; } 
 
-        /* Анимация бега */
         .running .leg-l { animation: runMember 0.25s infinite alternate linear; }
         .running .leg-r { animation: runMember 0.25s infinite alternate-reverse linear; }
         .running .arm-l { animation: runMember 0.25s infinite alternate-reverse linear; }
         .running .arm-r { animation: runMember 0.25s infinite alternate linear; }
 
-        @keyframes runMember {
-            0% { transform: rotate(40deg); }
-            100% { transform: rotate(-40deg); }
-        }
+        @keyframes runMember { 0% { transform: rotate(40deg); } 100% { transform: rotate(-40deg); } }
         
         .running { animation: runWobble 0.25s infinite linear; }
         @keyframes runWobble {
@@ -143,22 +133,20 @@
         }
 
         /* Анимация поцелуя */
-        .lean-right { transform: translateX(15px) rotate(20deg) !important; }
-        .lean-left { transform: translateX(-15px) rotate(-20deg) !important; }
+        .lean-right { transform: translateX(18px) rotate(22deg) !important; }
+        .lean-left { transform: translateX(-18px) rotate(-22deg) !important; }
         
         @keyframes miniHeartFly {
             0% { opacity: 0; transform: translateY(0) scale(0.5); }
             20% { opacity: 1; transform: translateY(-12px) scale(1.2); }
-            100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+            100% { opacity: 0; transform: translateY(-90px) scale(1.5); }
         }
 
-        #syoma { left: 15%; }
+        #syoma { left: 50px; }
         #vika { left: 100%; display: none; }
         
-        /* Препятствия */
         .obstacle { position: absolute; bottom: 20vh; z-index: 2; }
         
-        /* Труба Марио */
         .pipe {
             width: 46px; background: linear-gradient(to right, #00A800, #55FF55 30%, #00A800 90%);
             border: 3px solid #000; border-bottom: none;
@@ -168,8 +156,6 @@
             background: linear-gradient(to right, #00A800, #55FF55 30%, #00A800 90%);
             border: 3px solid #000;
         }
-
-        /* Грибочки/черепахи */
         .goomba { font-size: 38px; line-height: 38px; }
         
         #instruction {
@@ -214,15 +200,12 @@
                     <div class="arm arm-l"></div>
                     <div class="arm arm-r"></div>
                     <div class="body"></div>
-                    <div class="legs">
-                        <div class="leg leg-l"></div>
-                        <div class="leg leg-r"></div>
-                    </div>
+                    <div class="legs"><div class="leg leg-l"></div><div class="leg leg-r"></div></div>
                 </div>
             </div>
 
             <div id="vika" class="sprite">
-                <div id="vika-inner" class="character" style="transform: rotate(-5deg);">
+                <div id="vika-inner" class="character">
                     <div class="head">👸🏻</div>
                     <div class="arm arm-l"></div>
                     <div class="arm arm-r"></div>
@@ -316,9 +299,9 @@
         let velocityY = 0;
         const gravity = 0.7;      
         const jumpPower = 14;
-        let gameSpeed = 5.5;      
+        let gameSpeed = 5;      
         let distance = 0;
-        const finishDistance = 1400; // Оптимальная длина
+        const finishDistance = 3500; // Сделали игру длиннее и сложнее!
         let spawnTimer = 0;
         let reqId;
         let isFinishing = false;  
@@ -341,16 +324,16 @@
         }
 
         function resetGame() {
-            syomaY = 0; velocityY = 0; distance = 0; spawnTimer = 0; gameSpeed = 5.5;
+            syomaY = 0; velocityY = 0; distance = 0; spawnTimer = 0; gameSpeed = 5;
             isFinishing = false;
             
             syomaEl.style.bottom = '20vh';
+            syomaEl.style.left = '50px';
             syomaInner.className = 'character running'; 
             
             vikaEl.style.display = 'none';
             vikaEl.style.left = '100%';
             vikaInner.className = 'character';
-            vikaInner.style.transform = 'rotate(-5deg)';
             
             document.querySelectorAll('.obstacle, .mini-heart').forEach(e => e.remove());
         }
@@ -397,21 +380,18 @@
                 gameSpeed += 0.001; 
             }
 
-            // Спавн препятствий в стиле Марио
-            if (distance < finishDistance - 300 && !isFinishing) {
+            // УВЕЛИЧЕННАЯ СЛОЖНОСТЬ: Препятствия появляются чаще
+            if (distance < finishDistance - 400 && !isFinishing) {
                 spawnTimer++;
-                if (spawnTimer > 70 + Math.random() * 50) {
+                if (spawnTimer > 60 + Math.random() * 40) { // Снижен порог таймера = больше препятствий
                     const obs = document.createElement('div');
-                    
-                    // Случайно выбираем: труба или грибочек
                     if (Math.random() > 0.5) {
                         obs.className = 'obstacle pipe';
-                        obs.style.height = (30 + Math.random() * 40) + 'px'; // Разная высота труб
+                        obs.style.height = (30 + Math.random() * 45) + 'px'; 
                     } else {
                         obs.className = 'obstacle goomba';
-                        obs.innerText = ['🍄','🐢'][Math.floor(Math.random()*2)];
+                        obs.innerText = ['🍄','🐢','🌵'][Math.floor(Math.random()*3)];
                     }
-                    
                     obs.style.left = gameArea.offsetWidth + 'px';
                     gameArea.appendChild(obs);
                     spawnTimer = 0;
@@ -447,27 +427,29 @@
                 return;
             }
 
-            // Финал! Сёма добегает до Принцессы
+            // ФИНАЛ: Вика появляется с отступом от правого края (на 75% экрана)
             if (distance >= finishDistance) {
-                vikaEl.style.display = 'block';
-                let vikaLeft = parseFloat(vikaEl.style.left) || gameArea.offsetWidth;
-                
-                // Вика выезжает и останавливается близко к центру (60% экрана)
-                if (vikaLeft > gameArea.offsetWidth * 0.6) {
+                vikaEl.style.display = 'flex';
+                let vikaLeft = vikaEl.offsetLeft;
+                if (!vikaEl.style.left) vikaLeft = gameArea.offsetWidth;
+
+                // Движем Вику до позиции 75% экрана
+                if (vikaLeft > gameArea.offsetWidth * 0.75) {
                     vikaEl.style.left = (vikaLeft - gameSpeed) + 'px';
                 } else {
                     isFinishing = true;
                     let sRect = syomaEl.getBoundingClientRect();
                     let vRect = vikaEl.getBoundingClientRect();
                     
-                    // Сёма подбегает
-                    if (sRect.right < vRect.left + 15) {
-                        syomaEl.style.left = (parseFloat(syomaEl.style.left || 15) + 3) + '%';
+                    // Сёма бежит навстречу
+                    if (sRect.right < vRect.left + 5) {
+                        syomaEl.style.left = (syomaEl.offsetLeft + 4) + 'px';
                     } else if (gameActive) {
                         gameActive = false; 
                         syomaInner.classList.remove('running');
                         document.getElementById('instruction').innerText = "ПРИНЦЕССА СПАСЕНА! ❤️";
                         
+                        // АНИМАЦИЯ ПОЦЕЛУЯ
                         syomaInner.className = 'character lean-right';
                         vikaInner.className = 'character lean-left';
 
@@ -475,13 +457,14 @@
                         miniHeart.className = 'mini-heart';
                         miniHeart.innerText = '💗';
                         miniHeart.style.position = 'absolute';
-                        miniHeart.style.left = (parseFloat(vikaEl.style.left) - 25) + 'px';
-                        miniHeart.style.bottom = 'calc(20vh + 70px)';
+                        miniHeart.style.left = (vRect.left - 20) + 'px';
+                        miniHeart.style.bottom = 'calc(20vh + 60px)';
                         miniHeart.style.fontSize = '45px';
                         miniHeart.style.zIndex = '5';
-                        miniHeart.style.animation = 'miniHeartFly 1.2s ease-out forwards';
+                        miniHeart.style.animation = 'miniHeartFly 1.5s ease-out forwards';
                         gameArea.appendChild(miniHeart);
 
+                        // Через 1.5 сек закрываем игру и отправляем поцелуй
                         setTimeout(() => {
                             stopGame();
                             sendKiss();
