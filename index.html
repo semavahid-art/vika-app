@@ -217,3 +217,237 @@
             document.body.appendChild(heart);
             setTimeout(() => heart.remove(), 1500);
         }
+
+        function sendKiss() {
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            const kiss = document.createElement('div');
+            kiss.innerHTML = '💋'; kiss.className = 'big-kiss';
+            document.body.appendChild(kiss);
+            setTimeout(() => kiss.remove(), 800);
+            for (let i = 0; i < 12; i++) setTimeout(createHeartEffect, i * 40);
+            try { tg.sendData('Поцелуй отправлен! 💋'); } catch(e) {}
+        }
+
+        function sendMsg(text) {
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            for (let i = 0; i < 6; i++) setTimeout(createHeartEffect, i * 60);
+            try { tg.sendData(text); } catch(e) {}
+        }
+
+        function createParticles() {
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = Math.random() * 4 + 2;
+                p.style.width = size + 'px'; p.style.height = size + 'px';
+                p.style.left = Math.random() * 100 + 'vw';
+                p.style.top = Math.random() * 100 + 'vh';
+                p.style.animationDelay = Math.random() * 5 + 's';
+                document.body.appendChild(p);
+            }
+        }
+
+        const startDate = new Date(2023, 8, 26); 
+        function updateTimer() {
+            const now = new Date();
+            const diff = now - startDate;
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff / 3600000) % 24);
+            const m = Math.floor((diff / 60000) % 60);
+            const s = Math.floor((diff / 1000) % 60);
+            document.getElementById('timer').innerText = `${d}д. ${h}ч. ${m}м. ${s}с.`;
+        }
+
+        setInterval(updateTimer, 1000); updateTimer();
+        createParticles();
+        window.onload = () => { for (let i = 0; i < 10; i++) setTimeout(createHeartEffect, i * 100); };
+
+        /* ================= ЛОГИКА ИГРЫ (ОПТИМИЗАЦИЯ ДЛЯ ТЕЛЕФОНОВ) ================= */
+        let gameActive = false;
+        let syomaY = 0;
+        let velocityY = 0;
+        const gravity = 0.8;      
+        const jumpPower = 15; // Прыжок стал выше, так как экран больше
+        let gameSpeed = 4.5;      
+        let distance = 0;
+        const finishDistance = 1600; // Сделали уровень в 2 раза длиннее!
+        let spawnTimer = 0;
+        let reqId;
+        let isFinishing = false;  
+
+        const overlay = document.getElementById('game-overlay');
+        const syomaEl = document.getElementById('syoma');
+        const syomaInner = document.getElementById('syoma-inner');
+        const vikaEl = document.getElementById('vika');
+        const vikaInner = document.getElementById('vika-inner');
+        const gameArea = document.getElementById('game-area');
+        const closeBtn = document.getElementById('close-btn');
+
+        function startGame() {
+            // Попытка развернуть WebApp на весь экран (работает в новых версиях Telegram)
+            try { tg.requestFullscreen(); } catch(e) {}
+            
+            overlay.style.display = 'flex';
+            resetGame();
+            gameActive = true;
+            document.getElementById('instruction').innerText = "Тапай в любом месте экрана!";
+            reqId = requestAnimationFrame(gameLoop);
+        }
+
+        function resetGame() {
+            syomaY = 0; velocityY = 0; distance = 0; spawnTimer = 0; gameSpeed = 4.5;
+            isFinishing = false;
+            
+            syomaEl.style.bottom = '20vh';
+            syomaInner.className = 'character running'; 
+            
+            vikaEl.style.display = 'none';
+            vikaEl.style.left = '100%';
+            vikaInner.className = 'character';
+            vikaInner.style.transform = 'rotate(-5deg)'; // Вика чуть повернута к Сёме
+            
+            document.querySelectorAll('.obstacle, .mini-heart').forEach(e => e.remove());
+        }
+
+        function handleTap(e) {
+            if (e.target === closeBtn) return;
+            e.preventDefault(); 
+            if (!gameActive || isFinishing) return;
+            
+            // Если Сёма на земле
+            if (syomaY <= 1) { 
+                velocityY = jumpPower;
+                syomaInner.classList.remove('running'); // Перестаем бежать в прыжке
+                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            }
+        }
+
+        overlay.addEventListener('touchstart', handleTap, { passive: false });
+        overlay.addEventListener('mousedown', handleTap);
+
+        closeBtn.addEventListener('click', stopGame);
+        closeBtn.addEventListener('touchstart', stopGame, { passive: false });
+
+        function stopGame(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            gameActive = false;
+            cancelAnimationFrame(reqId);
+            overlay.style.display = 'none';
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+
+            // 1. Физика прыжка
+            syomaY += velocityY;
+            velocityY -= gravity;
+            
+            // Приземление
+            if (syomaY <= 0) { 
+                if (syomaY < 0 && !isFinishing) syomaInner.classList.add('running'); 
+                syomaY = 0; 
+                velocityY = 0; 
+            }
+            syomaEl.style.bottom = `calc(20vh + ${syomaY}px)`;
+
+            if (!isFinishing) {
+                distance += gameSpeed;
+                gameSpeed += 0.001; 
+            }
+
+            // 2. Спавн препятствий
+            if (distance < finishDistance && !isFinishing) {
+                spawnTimer++;
+                if (spawnTimer > 100 + Math.random() * 60) {
+                    const obs = document.createElement('div');
+                    obs.className = 'obstacle';
+                    obs.innerText = ['🌵','🪨'][Math.floor(Math.random()*2)];
+                    obs.style.left = gameArea.offsetWidth + 'px';
+                    gameArea.appendChild(obs);
+                    spawnTimer = 0;
+                }
+            }
+
+            // 3. Движение препятствий и проверка столкновений
+            let hit = false;
+            const syomaRect = syomaInner.getBoundingClientRect();
+
+            document.querySelectorAll('.obstacle').forEach(obs => {
+                let currentLeft = parseFloat(obs.style.left);
+                currentLeft -= gameSpeed;
+                obs.style.left = currentLeft + 'px';
+
+                const obsRect = obs.getBoundingClientRect();
+                // Проверяем столкновение тел (с мягким хитбоксом)
+                if (
+                    syomaRect.right - 20 > obsRect.left &&
+                    syomaRect.left + 20 < obsRect.right &&
+                    syomaRect.bottom > obsRect.top + 15
+                ) {
+                    hit = true;
+                }
+
+                if (currentLeft < -60) obs.remove();
+            });
+
+            if (hit && !isFinishing) {
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                gameActive = false;
+                syomaInner.classList.remove('running');
+                document.getElementById('instruction').innerText = "Ой, споткнулся! 🥺";
+                setTimeout(() => { if (overlay.style.display === 'flex') startGame(); }, 1500);
+                return;
+            }
+
+            // 4. Финал! Сёма добегает до Вики
+            if (distance >= finishDistance) {
+                vikaEl.style.display = 'block';
+                let vikaLeft = parseFloat(vikaEl.style.left) || gameArea.offsetWidth;
+                
+                // Вика выезжает и останавливается
+                if (vikaLeft > gameArea.offsetWidth * 0.75) {
+                    vikaEl.style.left = (vikaLeft - gameSpeed) + 'px';
+                } else {
+                    isFinishing = true;
+                    // Сёма бежит к ней
+                    let sRect = syomaEl.getBoundingClientRect();
+                    let vRect = vikaEl.getBoundingClientRect();
+                    
+                    if (sRect.right < vRect.left + 10) {
+                        syomaEl.style.left = (parseFloat(syomaEl.style.left || 10) + 3) + '%';
+                    } else if (gameActive) {
+                        gameActive = false; 
+                        syomaInner.classList.remove('running');
+                        document.getElementById('instruction').innerText = "ЛЮБЛЮ ТЕБЯ! ❤️";
+                        
+                        // Наклоняются друг к другу для поцелуя
+                        syomaInner.className = 'character lean-right';
+                        vikaInner.className = 'character lean-left';
+
+                        // Сердечко между ними
+                        const miniHeart = document.createElement('div');
+                        miniHeart.className = 'mini-heart';
+                        miniHeart.innerText = '💗';
+                        miniHeart.style.position = 'absolute';
+                        miniHeart.style.left = (parseFloat(vikaEl.style.left) - 30) + 'px';
+                        miniHeart.style.bottom = 'calc(20vh + 60px)';
+                        miniHeart.style.fontSize = '40px';
+                        miniHeart.style.zIndex = '5';
+                        miniHeart.style.animation = 'miniHeartFly 1.2s ease-out forwards';
+                        gameArea.appendChild(miniHeart);
+
+                        setTimeout(() => {
+                            stopGame();
+                            sendKiss();
+                            try { tg.sendData("Сёма преодолел все преграды и поцеловал Вику! 🏃‍♂️❤️👩🏻"); } catch(e){}
+                        }, 1500);
+                        return;
+                    }
+                }
+            }
+
+            reqId = requestAnimationFrame(gameLoop);
+        }
+    </script>
+</body>
+</html>
