@@ -104,11 +104,9 @@
         .invincible { animation: flicker 0.2s infinite; }
         @keyframes flicker { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
         
-        /* СУПЕР-РЕЖИМ (ЗВЕЗДОЧКА) */
         .super-mode { animation: rainbowGlow 0.4s infinite linear !important; }
         @keyframes rainbowGlow { 0% { filter: drop-shadow(0 0 10px red) hue-rotate(0deg); } 50% { filter: drop-shadow(0 0 20px yellow) hue-rotate(180deg); } 100% { filter: drop-shadow(0 0 10px red) hue-rotate(360deg); } }
         
-        /* Анимация сбитых препятствий */
         .smashed { animation: smash 0.6s forwards linear; pointer-events: none; }
         @keyframes smash { 0% { transform: translate(0, 0) rotate(0deg); opacity: 1; } 100% { transform: translate(150px, -300px) rotate(360deg); opacity: 0; } }
 
@@ -137,7 +135,7 @@
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0, 0, 0, 0.95); z-index: 10001;
             align-items: center; justify-content: center; flex-direction: column;
-            opacity: 0; transition: opacity 1.5s ease;
+            opacity: 0; transition: opacity 1.5s ease; cursor: pointer;
         }
         .finale-photo {
             width: 85%; max-width: 350px; border-radius: 20px;
@@ -147,6 +145,10 @@
         .finale-text {
             color: #ff99cc; font-size: 32px; font-weight: 900; margin-top: 25px;
             text-shadow: 2px 2px 5px #000, 0 0 10px #ff4d6d; text-align: center;
+        }
+        .finale-hint {
+            color: rgba(255,255,255,0.6); margin-top: 15px; font-size: 14px;
+            animation: blink 2s infinite;
         }
         @keyframes pulseGlow { 0% { box-shadow: 0 0 20px #ff4d6d; } 100% { box-shadow: 0 0 50px #ff66b2; } }
     </style>
@@ -206,6 +208,7 @@
     <div id="finale-modal" onclick="closeFinale()">
         <img src="https://i.postimg.cc/HnMVCPYn/photo-3-2026-02-28-17-22-30.jpg" alt="Мы" class="finale-photo">
         <div class="finale-text">Я люблю тебя<br>бесконечно! ❤️</div>
+        <div class="finale-hint">(Нажми на экран, чтобы отправить результат)</div>
     </div>
 
     <script>
@@ -261,9 +264,7 @@
         let gameSpeed = 5.5, maxSpeed = 10, distance = 0, finishDistance = 15000; 
         let spawnTimer = 0, cloudTimer = 0, bgPos = 0;
         let score = 0, lives = 3, invincible = false;
-        
-        let superMode = false;
-        let superTimer = 0;
+        let superMode = false, superTimer = 0;
 
         const overlay = document.getElementById('game-overlay');
         const syomaEl = document.getElementById('syoma');
@@ -340,9 +341,15 @@
             gameActive = false; cancelAnimationFrame(reqId); overlay.style.display = 'none';
         }
 
+        // ОТПРАВКА ДАННЫХ ТОЛЬКО ПОСЛЕ КЛИКА ПО ФОТО
         function closeFinale() {
             document.getElementById('finale-modal').style.opacity = '0';
-            setTimeout(() => { document.getElementById('finale-modal').style.display = 'none'; }, 1000);
+            setTimeout(() => { 
+                document.getElementById('finale-modal').style.display = 'none'; 
+                stopGame();
+                sendKiss();
+                try { tg.sendData(`Сёма собрал ${score} сердец, победил всех птиц и поцеловал Вику! 🏃🏻‍♂️❤️👸🏼`); } catch(e){}
+            }, 500);
         }
 
         function hitObstacle(obs) {
@@ -413,7 +420,6 @@
                 spawnTimer++;
                 if (spawnTimer > 60 + Math.random() * 50) { 
                     const rand = Math.random();
-                    
                     if (rand < 0.05 && !superMode) {
                         const star = document.createElement('div');
                         star.className = 'collectible star'; star.innerText = '⭐';
@@ -524,7 +530,7 @@
                             const modal = document.getElementById('finale-modal');
                             modal.style.display = 'flex';
                             setTimeout(() => { modal.style.opacity = '1'; }, 100);
-                            try { tg.sendData(`Сёма собрал ${score} сердец, победил всех птиц и поцеловал Вику! 🏃🏻‍♂️❤️👸🏼`); } catch(e){}
+                            // tg.sendData отсюда убрал, оно сработает только при клике по фото
                         }, 1800);
                         return;
                     }
