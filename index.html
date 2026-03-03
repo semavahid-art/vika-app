@@ -235,7 +235,6 @@
 
         const phrases = ["Ты — моё самое дорогое сокровище ✨", "Твоя улыбка — это чистый кайф 😍", "Самая красивая девочка в мире! ❤️", "Обожаю твой голос и смех 🌸", "Ты — мой личный сорт счастья 🌟", "Хочу быть рядом каждую секунду 🥰"];
         
-        // Массив признаний для финала игры
         const loveMessages = [
             "Никакие преграды не остановят меня на пути к тебе. Ты моё всё! ✨",
             "Ты — самое дорогое, что у меня есть. Люблю тебя до луны и обратно! 🌙",
@@ -291,7 +290,7 @@
                 osc.connect(gain); gain.connect(audioCtx.destination);
                 osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
                 osc.stop(audioCtx.currentTime + duration);
-            } catch(e) {} // Защита от краша звука
+            } catch(e) {} 
         }
         function soundJump() { playTone(400, 'square', 0.1); setTimeout(()=>playTone(600, 'square', 0.15), 50); }
         function soundCoin() { playTone(900, 'sine', 0.1); setTimeout(()=>playTone(1200, 'sine', 0.15), 80); }
@@ -386,7 +385,6 @@
             gameActive = false; cancelAnimationFrame(reqId); overlay.style.display = 'none';
         }
 
-        // КНОПКА ФИНАЛА
         function submitScore(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             document.getElementById('finale-modal').style.display = 'none'; 
@@ -424,7 +422,6 @@
             }
         }
 
-        // БЕЗОПАСНАЯ ФУНКЦИЯ ЗАВЕРШЕНИЯ
         function triggerFinale() {
             gameActive = false; 
             syomaInner.classList.remove('running');
@@ -496,10 +493,8 @@
                 gameArea.appendChild(cloud); cloudTimer = 0;
             }
 
-            // --- ДИНАМИЧЕСКИЙ СПАВН С УСЛОЖНЕНИЕМ ---
             if (distance < finishDistance - 800 && !isFinishing) {
                 spawnTimer++;
-                // Чем ближе к концу, тем меньше задержка между преградами!
                 let progress = distance / finishDistance;
                 let baseDelay = 60 - (30 * progress);
                 let randDelay = 50 - (25 * progress);
@@ -508,24 +503,26 @@
                     const rand = Math.random();
                     if (rand < 0.05 && !superMode) {
                         const star = document.createElement('div'); star.className = 'collectible star'; star.innerText = '⭐';
-                        star.style.left = gameArea.offsetWidth + 'px'; star.style.bottom = `calc(20vh + ${70 + Math.random() * 60}px)`; 
+                        star.style.left = gameArea.offsetWidth + 'px'; 
+                        // СУПЕР-ИСПРАВЛЕНИЕ: Звезда спавнится строго ВЫШЕ головы (от 110px и выше)
+                        star.style.bottom = `calc(20vh + ${110 + Math.random() * 40}px)`; 
                         gameArea.appendChild(star);
                     } 
                     else if (rand < 0.35) {
-                        // БОМБА ИЛИ СЕРДЦЕ (30% шанс на бомбу)
                         const isBomb = Math.random() < 0.3;
                         const itemObj = document.createElement('div'); 
                         itemObj.className = isBomb ? 'collectible bomb' : 'collectible heart'; 
                         itemObj.innerText = isBomb ? '💣' : '💖';
                         itemObj.style.left = gameArea.offsetWidth + 'px'; 
-                        itemObj.style.bottom = `calc(20vh + ${60 + Math.random() * 60}px)`; 
+                        // СУПЕР-ИСПРАВЛЕНИЕ: Бомбы и сердечки только ВЫШЕ головы (от 110px)
+                        itemObj.style.bottom = `calc(20vh + ${110 + Math.random() * 40}px)`; 
                         gameArea.appendChild(itemObj);
                     } else if (rand < 0.55) {
-                        // ПТИЦА (Может лететь высоко или низко!)
                         const isHighBird = Math.random() > 0.5;
                         const birdObj = document.createElement('div'); birdObj.className = 'obstacle bird'; birdObj.innerText = '🦅';
                         birdObj.style.left = gameArea.offsetWidth + 'px'; 
-                        birdObj.style.bottom = isHighBird ? 'calc(20vh + 90px)' : 'calc(20vh + 15px)'; 
+                        // СУПЕР-ИСПРАВЛЕНИЕ: Высокая птица на 110px, низкая на 15px
+                        birdObj.style.bottom = isHighBird ? 'calc(20vh + 110px)' : 'calc(20vh + 15px)'; 
                         gameArea.appendChild(birdObj);
                     } else {
                         const obs = document.createElement('div');
@@ -544,16 +541,19 @@
                 if (l < -200) c.remove();
             });
 
-            // ОБРАБОТКА СТОЛКНОВЕНИЙ В ВОЗДУХЕ (Сердечки, Звезды, Бомбы)
+            // УМЕНЬШЕННЫЙ ХИТБОКС ДЛЯ ПРЕДМЕТОВ В ВОЗДУХЕ
             document.querySelectorAll('.collectible:not(.smashed)').forEach(item => {
                 let currentLeft = parseFloat(item.style.left); currentLeft -= gameSpeed; item.style.left = currentLeft + 'px';
                 const iRect = item.getBoundingClientRect();
                 
-                if (syomaRect.right > iRect.left && syomaRect.left < iRect.right && syomaRect.bottom > iRect.top && syomaRect.top < iRect.bottom) {
+                if (syomaRect.right - 10 > iRect.left + 5 && 
+                    syomaRect.left + 10 < iRect.right - 5 && 
+                    syomaRect.bottom - 10 > iRect.top + 5 && 
+                    syomaRect.top + 15 < iRect.bottom - 5) {
                     
                     if (item.classList.contains('bomb')) {
                         hitObstacle(item);
-                        if (!item.classList.contains('smashed')) item.remove(); // Взрывается о лицо
+                        if (!item.classList.contains('smashed')) item.remove(); 
                     } 
                     else if (item.classList.contains('star')) {
                         superMode = true; superTimer = 350; syomaInner.classList.add('super-mode'); soundPowerup();
@@ -567,10 +567,14 @@
                 if (currentLeft < -60) item.remove();
             });
 
+            // УМЕНЬШЕННЫЙ ХИТБОКС ДЛЯ ПРЕГРАД
             document.querySelectorAll('.obstacle:not(.smashed)').forEach(obs => {
                 let currentLeft = parseFloat(obs.style.left); currentLeft -= gameSpeed; obs.style.left = currentLeft + 'px';
                 const obsRect = obs.getBoundingClientRect();
-                if (syomaRect.right - 15 > obsRect.left + 5 && syomaRect.left + 15 < obsRect.right - 5 && syomaRect.bottom - 10 > obsRect.top + 10 && syomaRect.top + 15 < obsRect.bottom - 10) {
+                if (syomaRect.right - 15 > obsRect.left + 10 && 
+                    syomaRect.left + 15 < obsRect.right - 10 && 
+                    syomaRect.bottom - 10 > obsRect.top + 10 && 
+                    syomaRect.top + 20 < obsRect.bottom - 10) {
                     hitObstacle(obs);
                 }
                 if (currentLeft < -150) obs.remove();
