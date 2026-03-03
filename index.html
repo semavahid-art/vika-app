@@ -130,7 +130,7 @@
         .close-game { position: absolute; top: 15px; right: 15px; background: #e52521; border: 3px solid #000; color: white; padding: 8px 12px; border-radius: 10px; font-size: 16px; font-weight: bold; z-index: 10000; pointer-events: auto; cursor: pointer; box-shadow: 2px 2px 0 #000; }
         .close-game:active { transform: translate(2px, 2px); box-shadow: none; }
 
-        /* --- ГРАНД ФИНАЛ: АНИМИРОВАННАЯ ОТКРЫТКА --- */
+        /* --- ГРАНД ФИНАЛ: ТЕКСТОВАЯ ОТКРЫТКА --- */
         #finale-modal {
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85); z-index: 10001;
@@ -152,9 +152,9 @@
             100% { transform: scale(1); }
         }
 
-        .finale-icon { font-size: 60px; margin-bottom: 10px; animation: beat 1.2s infinite; }
+        .finale-icon { font-size: 55px; margin-bottom: 10px; animation: beat 1.2s infinite; }
         .finale-title { color: #d63384; font-size: 24px; font-weight: 900; margin-bottom: 15px; text-shadow: 1px 1px 0px #fff; }
-        .finale-message { color: #444; font-size: 17px; font-weight: 800; line-height: 1.4; margin-bottom: 25px; }
+        .finale-message { color: #444; font-size: 20px; font-weight: 800; line-height: 1.4; margin-bottom: 25px; font-style: italic; }
         
         .finish-button {
             background: #e52521; border: 3px solid #fff; color: white; 
@@ -220,7 +220,7 @@
             <div class="finale-card">
                 <div class="finale-icon">👸🏼❤️👦🏻</div>
                 <div class="finale-title">МОЕЙ ЛЮБИМОЙ ВИКЕ</div>
-                <div class="finale-message">Я пройду любые преграды,<br>чтобы всегда быть рядом.<br>Я люблю тебя бесконечно!</div>
+                <div class="finale-message" id="dynamic-love-message">Текст загружается...</div>
                 <button class="finish-button" id="final-send-btn">ОТПРАВИТЬ РЕЗУЛЬТАТ 💌</button>
             </div>
         </div>
@@ -231,6 +231,17 @@
         tg.ready(); tg.expand(); 
 
         const phrases = ["Ты — моё самое дорогое сокровище ✨", "Твоя улыбка — это чистый кайф 😍", "Самая красивая девочка в мире! ❤️", "Обожаю твой голос и смех 🌸", "Ты — мой личный сорт счастья 🌟", "Хочу быть рядом каждую секунду 🥰"];
+        
+        // Массив признаний для финала игры
+        const loveMessages = [
+            "Никакие преграды не остановят меня на пути к тебе. Ты моё всё! ✨",
+            "Ты — самое дорогое, что у меня есть. Люблю тебя до луны и обратно! 🌙",
+            "С каждым днём я влюбляюсь в тебя всё сильнее. Моя принцесса! 👸🏼❤️",
+            "Ты делаешь меня самым счастливым. Спасибо, что ты есть у меня! 🥰",
+            "Моя любовь к тебе больше, чем этот огромный уровень! Люблю бесконечно! 💖",
+            "Ради твоей улыбки я готов свернуть горы. Ты — моё чудо! 🌸"
+        ];
+
         function changePhrase() { document.getElementById('compliment-box').innerText = phrases[Math.floor(Math.random() * phrases.length)]; if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light'); }
 
         function createHeartEffect() {
@@ -551,7 +562,10 @@
                         mh.style.zIndex = '5'; mh.style.animation = 'miniHeartFly 1.5s ease-out forwards';
                         gameArea.appendChild(mh);
 
-                        // ФИНАЛ: ПОЯВЛЕНИЕ ОТКРЫТКИ
+                        // Устанавливаем рандомный текст
+                        const randomMessage = loveMessages[Math.floor(Math.random() * loveMessages.length)];
+                        document.getElementById('dynamic-love-message').innerText = randomMessage;
+
                         setTimeout(() => {
                             const modal = document.getElementById('finale-modal');
                             modal.style.display = 'flex';
