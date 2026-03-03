@@ -8,7 +8,6 @@
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            /* Фон вне игры */
             background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), 
                         url('https://i.postimg.cc/HnQ64z0y/Funky-Beehive-Collage-Blank.png');
             background-size: cover; background-position: center; background-attachment: fixed;
@@ -18,15 +17,7 @@
             touch-action: none; 
         }
 
-        .particle {
-            position: absolute; background: white; border-radius: 50%;
-            pointer-events: none; opacity: 0; z-index: 1; animation: blink 3s infinite;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 0; transform: scale(0.5); }
-            50% { opacity: 0.8; transform: scale(1.2); }
-        }
-
+        /* Меню вне игры */
         .container {
             background: rgba(255, 255, 255, 0.82);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -36,8 +27,7 @@
 
         .heart { font-size: 45px; animation: beat 1.2s infinite; }
         @keyframes beat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
-
-        #timer { font-size: 19px; font-weight: 800; margin: 10px 0; color: #444; letter-spacing: 0.5px; }
+        #timer { font-size: 19px; font-weight: 800; margin: 10px 0; color: #444; }
 
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         button {
@@ -48,125 +38,104 @@
         .btn-game { grid-column: span 2; background: #e52521 !important; padding: 14px; font-size: 15px; margin-top: 5px; border-bottom: 4px solid #b31b17;}
         button:active { transform: translateY(2px); border-bottom-width: 2px; }
 
-        #compliment-box {
-            margin-top: 15px; padding: 10px; background: rgba(214, 51, 132, 0.1);
-            border-radius: 15px; font-size: 13px; font-style: italic; min-height: 40px;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-        }
-
-        .floating-heart {
-            position: fixed; pointer-events: none; z-index: 9999;
-            animation: fly 1.5s ease-out forwards;
-        }
-        @keyframes fly {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-            100% { transform: translate(calc(-50% + var(--tw-x)), calc(-50% + var(--tw-y))) scale(1.5); opacity: 0; }
-        }
-        .big-kiss {
-            position: fixed; top: 50%; left: 50%; z-index: 10000;
-            pointer-events: none; animation: kissAnim 0.8s ease-out forwards;
-        }
-        @keyframes kissAnim {
-            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-            50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
-        }
+        /* Всплывающие эффекты */
+        .floating-heart { position: fixed; pointer-events: none; z-index: 9999; animation: fly 1.5s ease-out forwards; }
+        @keyframes fly { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(calc(-50% + var(--tw-x)), calc(-50% + var(--tw-y))) scale(1.5); opacity: 0; } }
+        .big-kiss { position: fixed; top: 50%; left: 50%; z-index: 10000; pointer-events: none; animation: kissAnim 0.8s ease-out forwards; }
+        @keyframes kissAnim { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2); opacity: 0; } }
 
         /* --- СТИЛИ ИГРЫ МАРИО --- */
         #game-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: #5C94FC; z-index: 9990; touch-action: none; overflow: hidden;
         }
-        #game-area {
-            position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; 
-        }
+        #game-area { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; }
         
+        /* Задний фон (горы и облака) */
+        .mountains {
+            position: absolute; bottom: 20vh; left: 0; width: 100%; height: 150px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150"><polygon points="0,150 100,50 200,150" fill="%232c3e50" opacity="0.15"/><polygon points="50,150 150,80 250,150" fill="%232c3e50" opacity="0.25"/></svg>');
+            background-repeat: repeat-x; z-index: 0;
+        }
+        .cloud { position: absolute; font-size: 50px; opacity: 0.8; z-index: 0; }
+
+        /* Земля */
         .ground {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 20vh;
             background-color: #c84c0c;
-            background-image: 
-                linear-gradient(45deg, #983808 25%, transparent 25%, transparent 75%, #983808 75%, #983808),
-                linear-gradient(45deg, #983808 25%, transparent 25%, transparent 75%, #983808 75%, #983808);
-            background-size: 20px 20px;
-            background-position: 0 0, 10px 10px;
+            background-image: linear-gradient(45deg, #983808 25%, transparent 25%, transparent 75%, #983808 75%, #983808), linear-gradient(45deg, #983808 25%, transparent 25%, transparent 75%, #983808 75%, #983808);
+            background-size: 20px 20px; background-position: 0 0, 10px 10px;
             border-top: 14px solid #00a800; z-index: 1;
         }
         
+        /* Интерфейс (HUD) */
+        #hud {
+            position: absolute; top: 15px; left: 15px; width: calc(100% - 70px);
+            display: flex; flex-direction: column; gap: 8px; z-index: 10;
+        }
+        .stats {
+            display: flex; justify-content: space-between;
+            font-size: 22px; font-weight: bold; color: white; text-shadow: 2px 2px 0 #000;
+        }
+        .progress-bg {
+            width: 100%; height: 12px; background: rgba(0,0,0,0.5);
+            border-radius: 6px; border: 2px solid white; overflow: hidden;
+        }
+        .progress-bar { height: 100%; width: 0%; background: #ff4d6d; transition: width 0.1s linear; }
+
         .sprite { position: absolute; bottom: 20vh; z-index: 3; display: flex; justify-content: center; }
         
+        /* Модельки */
         .character {
             display: flex; flex-direction: column; align-items: center; 
             transform-origin: bottom center; transition: transform 0.4s ease; position: relative;
         }
         .head { font-size: 50px; line-height: 50px; z-index: 4; position: relative; }
-        .body { width: 26px; height: 32px; border-radius: 10px; z-index: 3; margin-top: -8px; position: relative; box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3); }
-        
         .arm { width: 9px; height: 22px; border-radius: 5px; position: absolute; top: 48px; z-index: 5; transform-origin: top center; }
-        .arm-l { left: -7px; }
-        .arm-r { right: -7px; }
-
+        .arm-l { left: -5px; } .arm-r { right: -5px; }
         .legs { display: flex; gap: 8px; z-index: 1; margin-top: -4px; position: relative; }
         .leg { width: 9px; height: 22px; border-radius: 4px; transform-origin: top center; }
 
-        /* Цвета Сёмы */
-        #syoma-inner .body { background: #049cd8; } 
-        #syoma-inner .arm { background: #e52521; } 
-        #syoma-inner .leg { background: #049cd8; }
+        /* Сёма */
+        #syoma-inner .body { background: #c62828; width: 26px; height: 30px; border-radius: 8px; z-index: 3; margin-top: -8px; box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3); } 
+        #syoma-inner .arm { background: #c62828; } 
+        #syoma-inner .leg { background: #111; } 
         
-        /* Цвета Вики */
-        #vika-inner .body { background: #fca0b8; border-radius: 15px 15px 0 0; width: 34px; height: 38px; } 
-        #vika-inner .arm { background: #fca0b8; top: 52px; }
-        #vika-inner .legs { display: none; } 
+        /* Вика (Принцесса) */
+        #vika-inner .body { background: #ff66b2; width: 38px; height: 42px; margin-top: -10px; z-index: 3; clip-path: polygon(25% 0%, 75% 0%, 100% 100%, 0% 100%); box-shadow: inset -3px -3px 6px rgba(0,0,0,0.2); } 
+        #vika-inner .arm { background: #ff99cc; top: 52px; width: 7px; z-index: 2; } 
+        #vika-inner .arm-l { left: -2px; } #vika-inner .arm-r { right: -2px; }
+        #vika-inner .legs { display: none; }
 
+        /* Анимации */
         .running .leg-l { animation: runMember 0.25s infinite alternate linear; }
         .running .leg-r { animation: runMember 0.25s infinite alternate-reverse linear; }
         .running .arm-l { animation: runMember 0.25s infinite alternate-reverse linear; }
         .running .arm-r { animation: runMember 0.25s infinite alternate linear; }
-
         @keyframes runMember { 0% { transform: rotate(40deg); } 100% { transform: rotate(-40deg); } }
-        
         .running { animation: runWobble 0.25s infinite linear; }
-        @keyframes runWobble {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            25% { transform: translateY(-5px) rotate(6deg); }
-            75% { transform: translateY(-5px) rotate(-6deg); }
-        }
-
-        /* Анимация поцелуя */
-        .lean-right { transform: translateX(18px) rotate(22deg) !important; }
-        .lean-left { transform: translateX(-18px) rotate(-22deg) !important; }
+        @keyframes runWobble { 0%, 100% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-5px) rotate(6deg); } 75% { transform: translateY(-5px) rotate(-6deg); } }
         
-        @keyframes miniHeartFly {
-            0% { opacity: 0; transform: translateY(0) scale(0.5); }
-            20% { opacity: 1; transform: translateY(-12px) scale(1.2); }
-            100% { opacity: 0; transform: translateY(-90px) scale(1.5); }
-        }
+        .invincible { animation: flicker 0.2s infinite; }
+        @keyframes flicker { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        .lean-right { transform: translateX(15px) rotate(20deg) !important; }
+        .lean-left { transform: translateX(-15px) rotate(-20deg) !important; }
+        @keyframes miniHeartFly { 0% { opacity: 0; transform: translateY(0) scale(0.5); } 20% { opacity: 1; transform: translateY(-12px) scale(1.2); } 100% { opacity: 0; transform: translateY(-90px) scale(1.5); } }
 
         #syoma { left: 50px; }
         #vika { left: 100%; display: none; }
         
+        /* Объекты на карте */
         .obstacle { position: absolute; bottom: 20vh; z-index: 2; }
-        
-        .pipe {
-            width: 46px; background: linear-gradient(to right, #00A800, #55FF55 30%, #00A800 90%);
-            border: 3px solid #000; border-bottom: none;
-        }
-        .pipe::after {
-            content: ''; position: absolute; top: -12px; left: -6px; width: 52px; height: 12px;
-            background: linear-gradient(to right, #00A800, #55FF55 30%, #00A800 90%);
-            border: 3px solid #000;
-        }
+        .pipe { width: 46px; background: linear-gradient(to right, #00A800, #55FF55 30%, #00A800 90%); border: 3px solid #000; border-bottom: none; }
+        .pipe::after { content: ''; position: absolute; top: -12px; left: -6px; width: 52px; height: 12px; background: linear-gradient(to right, #00A800, #55FF55 30%, #00A800 90%); border: 3px solid #000; }
         .goomba { font-size: 38px; line-height: 38px; }
+        .collectible { position: absolute; font-size: 35px; z-index: 2; animation: floatItem 1s infinite alternate; }
+        @keyframes floatItem { 0% { transform: translateY(0); } 100% { transform: translateY(-10px); } }
         
-        #instruction {
-            position: absolute; top: 12vh; width: 100%; text-align: center;
-            font-size: 26px; color: #fff; font-weight: 900; text-shadow: 3px 3px 0 #000; z-index: 5;
-        }
-        .close-game {
-            position: absolute; top: 20px; right: 20px; background: #e52521;
-            border: 3px solid #000; color: white; padding: 10px 15px; border-radius: 10px; font-size: 18px; font-weight: bold; z-index: 10000;
-            pointer-events: auto; cursor: pointer; box-shadow: 2px 2px 0 #000;
-        }
+        #instruction { position: absolute; top: 30vh; width: 100%; text-align: center; font-size: 24px; color: #fff; font-weight: 900; text-shadow: 3px 3px 0 #000; z-index: 5; opacity: 1; transition: opacity 0.5s;}
+        .close-game { position: absolute; top: 15px; right: 15px; background: #e52521; border: 3px solid #000; color: white; padding: 8px 12px; border-radius: 10px; font-size: 16px; font-weight: bold; z-index: 10000; pointer-events: auto; cursor: pointer; box-shadow: 2px 2px 0 #000; }
         .close-game:active { transform: translate(2px, 2px); box-shadow: none; }
     </style>
 </head>
@@ -190,15 +159,23 @@
 
     <div id="game-overlay">
         <button class="close-game" id="close-btn">X</button>
+        <div id="hud">
+            <div class="stats">
+                <span>Жизни: <span id="lives-counter">❤️❤️❤️</span></span>
+                <span>💖 <span id="score-counter">0</span></span>
+            </div>
+            <div class="progress-bg"><div class="progress-bar" id="progress-bar"></div></div>
+        </div>
+
         <div id="game-area">
-            <div class="ground"></div>
+            <div class="mountains" id="mountains"></div>
+            <div class="ground" id="ground"></div>
             <div id="instruction">Тапай, чтобы прыгать!</div>
             
             <div id="syoma" class="sprite">
                 <div id="syoma-inner" class="character">
-                    <div class="head">👨🏻‍🔧</div>
-                    <div class="arm arm-l"></div>
-                    <div class="arm arm-r"></div>
+                    <div class="head">👦🏻</div> 
+                    <div class="arm arm-l"></div> <div class="arm arm-r"></div>
                     <div class="body"></div>
                     <div class="legs"><div class="leg leg-l"></div><div class="leg leg-r"></div></div>
                 </div>
@@ -206,14 +183,11 @@
 
             <div id="vika" class="sprite">
                 <div id="vika-inner" class="character">
-                    <div class="head">👸🏻</div>
-                    <div class="arm arm-l"></div>
-                    <div class="arm arm-r"></div>
-                    <div class="body"></div>
-                    <div class="legs"></div>
+                    <div class="head">👸🏼</div> 
+                    <div class="arm arm-l"></div> <div class="arm arm-r"></div>
+                    <div class="body"></div> <div class="legs"></div>
                 </div>
             </div>
-            
         </div>
     </div>
 
@@ -221,154 +195,150 @@
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand(); 
 
-        const phrases = [
-            "Ты — моё самое дорогое сокровище ✨",
-            "Твоя улыбка — это чистый кайф 😍",
-            "Самая красивая девочка в мире! ❤️",
-            "Обожаю твой голос и смех 🌸",
-            "Ты — мой личный сорт счастья 🌟",
-            "Хочу быть рядом каждую секунду 🥰"
-        ];
-
-        function changePhrase() {
-            const box = document.getElementById('compliment-box');
-            box.innerText = phrases[Math.floor(Math.random() * phrases.length)];
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-        }
+        const phrases = ["Ты — моё самое дорогое сокровище ✨", "Твоя улыбка — это чистый кайф 😍", "Самая красивая девочка в мире! ❤️", "Обожаю твой голос и смех 🌸", "Ты — мой личный сорт счастья 🌟", "Хочу быть рядом каждую секунду 🥰"];
+        function changePhrase() { document.getElementById('compliment-box').innerText = phrases[Math.floor(Math.random() * phrases.length)]; if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light'); }
 
         function createHeartEffect() {
             const heart = document.createElement('div');
             heart.innerHTML = ['❤️','💖','💕','✨'][Math.floor(Math.random()*4)];
-            heart.className = 'floating-heart';
-            heart.style.left = '50%'; heart.style.top = '45%'; 
-            const angle = Math.random() * Math.PI * 2;
-            const dist = 120 + Math.random() * 150;
-            heart.style.setProperty('--tw-x', (Math.cos(angle) * dist) + 'px');
-            heart.style.setProperty('--tw-y', (Math.sin(angle) * dist) + 'px');
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 1500);
+            heart.className = 'floating-heart'; heart.style.left = '50%'; heart.style.top = '45%'; 
+            const angle = Math.random() * Math.PI * 2, dist = 120 + Math.random() * 150;
+            heart.style.setProperty('--tw-x', (Math.cos(angle) * dist) + 'px'); heart.style.setProperty('--tw-y', (Math.sin(angle) * dist) + 'px');
+            document.body.appendChild(heart); setTimeout(() => heart.remove(), 1500);
         }
 
         function sendKiss() {
             if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-            const kiss = document.createElement('div');
-            kiss.innerHTML = '💋'; kiss.className = 'big-kiss';
-            document.body.appendChild(kiss);
-            setTimeout(() => kiss.remove(), 800);
+            const kiss = document.createElement('div'); kiss.innerHTML = '💋'; kiss.className = 'big-kiss';
+            document.body.appendChild(kiss); setTimeout(() => kiss.remove(), 800);
             for (let i = 0; i < 12; i++) setTimeout(createHeartEffect, i * 40);
-            try { tg.sendData('Поцелуй отправлен! 💋'); } catch(e) {}
         }
-
-        function sendMsg(text) {
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-            for (let i = 0; i < 6; i++) setTimeout(createHeartEffect, i * 60);
-            try { tg.sendData(text); } catch(e) {}
-        }
-
-        function createParticles() {
-            for (let i = 0; i < 20; i++) {
-                const p = document.createElement('div');
-                p.className = 'particle';
-                const size = Math.random() * 4 + 2;
-                p.style.width = size + 'px'; p.style.height = size + 'px';
-                p.style.left = Math.random() * 100 + 'vw';
-                p.style.top = Math.random() * 100 + 'vh';
-                p.style.animationDelay = Math.random() * 5 + 's';
-                document.body.appendChild(p);
-            }
-        }
+        function sendMsg(text) { if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium'); for (let i = 0; i < 6; i++) setTimeout(createHeartEffect, i * 60); try { tg.sendData(text); } catch(e) {} }
 
         const startDate = new Date(2023, 8, 26); 
         function updateTimer() {
-            const now = new Date();
-            const diff = now - startDate;
-            const d = Math.floor(diff / 86400000);
-            const h = Math.floor((diff / 3600000) % 24);
-            const m = Math.floor((diff / 60000) % 60);
-            const s = Math.floor((diff / 1000) % 60);
-            document.getElementById('timer').innerText = `${d}д. ${h}ч. ${m}м. ${s}с.`;
+            const diff = new Date() - startDate;
+            document.getElementById('timer').innerText = `${Math.floor(diff/86400000)}д. ${Math.floor((diff/3600000)%24)}ч. ${Math.floor((diff/60000)%60)}м. ${Math.floor((diff/1000)%60)}с.`;
         }
-
         setInterval(updateTimer, 1000); updateTimer();
-        createParticles();
-        window.onload = () => { for (let i = 0; i < 10; i++) setTimeout(createHeartEffect, i * 100); };
+
+        /* ================= ЗВУКОВОЙ ДВИЖОК (8-bit) ================= */
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, type, duration, vol=0.1) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+            osc.stop(audioCtx.currentTime + duration);
+        }
+        function soundJump() { playTone(400, 'square', 0.1, 0.1); setTimeout(()=>playTone(600, 'square', 0.15, 0.1), 50); }
+        function soundCoin() { playTone(900, 'sine', 0.1, 0.1); setTimeout(()=>playTone(1200, 'sine', 0.15, 0.1), 80); }
+        function soundHit()  { playTone(200, 'sawtooth', 0.2, 0.2); setTimeout(()=>playTone(150, 'sawtooth', 0.3, 0.2), 150); }
+        function soundWin()  { playTone(500, 'square', 0.2); setTimeout(()=>playTone(650, 'square', 0.2), 200); setTimeout(()=>playTone(800, 'square', 0.4), 400); }
 
         /* ================= ЛОГИКА ИГРЫ ================= */
-        let gameActive = false;
-        let syomaY = 0;
-        let velocityY = 0;
-        const gravity = 0.7;      
-        const jumpPower = 14;
-        let gameSpeed = 5;      
-        let distance = 0;
-        const finishDistance = 3500; // Сделали игру длиннее и сложнее!
-        let spawnTimer = 0;
-        let reqId;
-        let isFinishing = false;  
+        let gameActive = false, isFinishing = false, reqId;
+        let syomaY = 0, velocityY = 0, gravity = 0.7, jumpPower = 14;
+        let gameSpeed = 5.5, distance = 0, finishDistance = 4500; // Длинный уровень
+        let spawnTimer = 0, cloudTimer = 0, bgPos = 0;
+        
+        // Новые переменные:
+        let score = 0;
+        let lives = 3;
+        let invincible = false;
 
         const overlay = document.getElementById('game-overlay');
         const syomaEl = document.getElementById('syoma');
         const syomaInner = document.getElementById('syoma-inner');
         const vikaEl = document.getElementById('vika');
-        const vikaInner = document.getElementById('vika-inner');
         const gameArea = document.getElementById('game-area');
-        const closeBtn = document.getElementById('close-btn');
+        const instruction = document.getElementById('instruction');
+
+        function updateHUD() {
+            document.getElementById('score-counter').innerText = score;
+            document.getElementById('lives-counter').innerText = '❤️'.repeat(lives) + '🖤'.repeat(3 - lives);
+            let p = Math.min((distance / finishDistance) * 100, 100);
+            document.getElementById('progress-bar').style.width = p + '%';
+        }
 
         function startGame() {
             try { tg.requestFullscreen(); } catch(e) {}
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            
             overlay.style.display = 'flex';
-            resetGame();
+            syomaY = 0; velocityY = 0; distance = 0; spawnTimer = 0; gameSpeed = 5.5; bgPos = 0;
+            score = 0; lives = 3; invincible = false; isFinishing = false;
+            updateHUD();
+
+            syomaEl.style.bottom = '20vh'; syomaEl.style.left = '50px';
+            syomaInner.className = 'character running'; 
+            vikaEl.style.display = 'none'; vikaEl.style.left = '100%';
+            
+            document.querySelectorAll('.obstacle, .collectible, .cloud, .mini-heart').forEach(e => e.remove());
+            instruction.innerText = "Тапай, чтобы прыгать!";
+            instruction.style.opacity = '1';
+            
             gameActive = true;
-            document.getElementById('instruction').innerText = "Тапай, чтобы прыгать!";
             reqId = requestAnimationFrame(gameLoop);
         }
 
-        function resetGame() {
-            syomaY = 0; velocityY = 0; distance = 0; spawnTimer = 0; gameSpeed = 5;
-            isFinishing = false;
-            
-            syomaEl.style.bottom = '20vh';
-            syomaEl.style.left = '50px';
-            syomaInner.className = 'character running'; 
-            
-            vikaEl.style.display = 'none';
-            vikaEl.style.left = '100%';
-            vikaInner.className = 'character';
-            
-            document.querySelectorAll('.obstacle, .mini-heart').forEach(e => e.remove());
-        }
-
         function handleTap(e) {
-            if (e.target === closeBtn) return;
+            if (e.target.id === 'close-btn') return;
             e.preventDefault(); 
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            instruction.style.opacity = '0'; // Прячем инструкцию после первого тапа
+
             if (!gameActive || isFinishing) return;
             
             if (syomaY <= 1) { 
                 velocityY = jumpPower;
                 syomaInner.classList.remove('running');
+                soundJump();
                 if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             }
         }
 
         overlay.addEventListener('touchstart', handleTap, { passive: false });
         overlay.addEventListener('mousedown', handleTap);
-
-        closeBtn.addEventListener('click', stopGame);
-        closeBtn.addEventListener('touchstart', stopGame, { passive: false });
+        document.getElementById('close-btn').addEventListener('click', stopGame);
+        document.getElementById('close-btn').addEventListener('touchstart', stopGame, { passive: false });
 
         function stopGame(e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
-            gameActive = false;
-            cancelAnimationFrame(reqId);
-            overlay.style.display = 'none';
+            gameActive = false; cancelAnimationFrame(reqId); overlay.style.display = 'none';
+        }
+
+        function hitObstacle() {
+            if (invincible || isFinishing) return;
+            lives--;
+            updateHUD();
+            soundHit();
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+            
+            if (lives <= 0) {
+                gameActive = false;
+                syomaInner.classList.remove('running');
+                instruction.innerText = "Ой! Попробуй еще раз 💔";
+                instruction.style.opacity = '1';
+                setTimeout(() => { if (overlay.style.display === 'flex') startGame(); }, 1500);
+            } else {
+                // Временная неуязвимость
+                invincible = true;
+                syomaInner.classList.add('invincible');
+                setTimeout(() => {
+                    invincible = false;
+                    syomaInner.classList.remove('invincible');
+                }, 1500);
+            }
         }
 
         function gameLoop() {
             if (!gameActive) return;
 
-            syomaY += velocityY;
-            velocityY -= gravity;
-            
+            // Физика прыжка
+            syomaY += velocityY; velocityY -= gravity;
             if (syomaY <= 0) { 
                 if (syomaY < 0 && !isFinishing) syomaInner.classList.add('running'); 
                 syomaY = 0; velocityY = 0; 
@@ -376,106 +346,118 @@
             syomaEl.style.bottom = `calc(20vh + ${syomaY}px)`;
 
             if (!isFinishing) {
-                distance += gameSpeed;
-                gameSpeed += 0.001; 
+                distance += gameSpeed; gameSpeed += 0.001; 
+                bgPos += (gameSpeed * 0.2); // Параллакс гор
+                document.getElementById('mountains').style.backgroundPositionX = -bgPos + 'px';
+                updateHUD();
             }
 
-            // УВЕЛИЧЕННАЯ СЛОЖНОСТЬ: Препятствия появляются чаще
-            if (distance < finishDistance - 400 && !isFinishing) {
+            // Спавн облаков
+            cloudTimer++;
+            if(cloudTimer > 150) {
+                const cloud = document.createElement('div'); cloud.className = 'cloud'; cloud.innerText = '☁️';
+                cloud.style.left = gameArea.offsetWidth + 'px'; cloud.style.top = (Math.random() * 30) + 'vh';
+                gameArea.appendChild(cloud); cloudTimer = 0;
+            }
+
+            // Спавн препятствий и сердечек
+            if (distance < finishDistance - 500 && !isFinishing) {
                 spawnTimer++;
-                if (spawnTimer > 60 + Math.random() * 40) { // Снижен порог таймера = больше препятствий
-                    const obs = document.createElement('div');
-                    if (Math.random() > 0.5) {
-                        obs.className = 'obstacle pipe';
-                        obs.style.height = (30 + Math.random() * 45) + 'px'; 
+                if (spawnTimer > 60 + Math.random() * 40) { 
+                    // С вероятностью 40% спавним сердечко сверху, иначе препятствие внизу
+                    if (Math.random() < 0.4) {
+                        const heartObj = document.createElement('div');
+                        heartObj.className = 'collectible'; heartObj.innerText = '💖';
+                        heartObj.style.left = gameArea.offsetWidth + 'px';
+                        heartObj.style.bottom = `calc(20vh + ${70 + Math.random() * 60}px)`; // Висят в воздухе
+                        gameArea.appendChild(heartObj);
                     } else {
-                        obs.className = 'obstacle goomba';
-                        obs.innerText = ['🍄','🐢','🌵'][Math.floor(Math.random()*3)];
+                        const obs = document.createElement('div');
+                        if (Math.random() > 0.5) {
+                            obs.className = 'obstacle pipe'; obs.style.height = (30 + Math.random() * 50) + 'px'; 
+                        } else {
+                            obs.className = 'obstacle goomba'; obs.innerText = ['🍄','🐢','🌵'][Math.floor(Math.random()*3)];
+                        }
+                        obs.style.left = gameArea.offsetWidth + 'px';
+                        gameArea.appendChild(obs);
                     }
-                    obs.style.left = gameArea.offsetWidth + 'px';
-                    gameArea.appendChild(obs);
                     spawnTimer = 0;
                 }
             }
 
-            let hit = false;
+            // Движение и столкновения
             const syomaRect = syomaInner.getBoundingClientRect();
 
+            // Облака
+            document.querySelectorAll('.cloud').forEach(c => {
+                let l = parseFloat(c.style.left); l -= (gameSpeed * 0.5); c.style.left = l + 'px';
+                if (l < -100) c.remove();
+            });
+
+            // Сердечки (сбор)
+            document.querySelectorAll('.collectible').forEach(item => {
+                let currentLeft = parseFloat(item.style.left);
+                currentLeft -= gameSpeed; item.style.left = currentLeft + 'px';
+
+                const iRect = item.getBoundingClientRect();
+                if (syomaRect.right > iRect.left && syomaRect.left < iRect.right && syomaRect.bottom > iRect.top && syomaRect.top < iRect.bottom) {
+                    score++; updateHUD(); soundCoin(); item.remove();
+                    if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+                }
+                if (currentLeft < -60) item.remove();
+            });
+
+            // Препятствия (урон)
             document.querySelectorAll('.obstacle').forEach(obs => {
                 let currentLeft = parseFloat(obs.style.left);
-                currentLeft -= gameSpeed;
-                obs.style.left = currentLeft + 'px';
+                currentLeft -= gameSpeed; obs.style.left = currentLeft + 'px';
 
                 const obsRect = obs.getBoundingClientRect();
-                if (
-                    syomaRect.right - 20 > obsRect.left &&
-                    syomaRect.left + 20 < obsRect.right &&
-                    syomaRect.bottom > obsRect.top + 15
-                ) {
-                    hit = true;
+                if (!invincible && syomaRect.right - 20 > obsRect.left && syomaRect.left + 20 < obsRect.right && syomaRect.bottom > obsRect.top + 15) {
+                    hitObstacle();
                 }
-
                 if (currentLeft < -60) obs.remove();
             });
 
-            if (hit && !isFinishing) {
-                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
-                gameActive = false;
-                syomaInner.classList.remove('running');
-                document.getElementById('instruction').innerText = "Ой! Попробуй еще раз 💔";
-                setTimeout(() => { if (overlay.style.display === 'flex') startGame(); }, 1200);
-                return;
-            }
-
-            // ФИНАЛ: Вика появляется с отступом от правого края (на 75% экрана)
+            // ФИНАЛ: Вика
             if (distance >= finishDistance) {
                 vikaEl.style.display = 'flex';
                 let vikaLeft = vikaEl.offsetLeft;
                 if (!vikaEl.style.left) vikaLeft = gameArea.offsetWidth;
 
-                // Движем Вику до позиции 75% экрана
                 if (vikaLeft > gameArea.offsetWidth * 0.75) {
                     vikaEl.style.left = (vikaLeft - gameSpeed) + 'px';
                 } else {
                     isFinishing = true;
-                    let sRect = syomaEl.getBoundingClientRect();
-                    let vRect = vikaEl.getBoundingClientRect();
+                    let sRect = syomaEl.getBoundingClientRect(), vRect = vikaEl.getBoundingClientRect();
                     
-                    // Сёма бежит навстречу
                     if (sRect.right < vRect.left + 5) {
                         syomaEl.style.left = (syomaEl.offsetLeft + 4) + 'px';
                     } else if (gameActive) {
                         gameActive = false; 
                         syomaInner.classList.remove('running');
-                        document.getElementById('instruction').innerText = "ПРИНЦЕССА СПАСЕНА! ❤️";
+                        instruction.innerText = "ПРИНЦЕССА СПАСЕНА! ❤️"; instruction.style.opacity = '1';
                         
-                        // АНИМАЦИЯ ПОЦЕЛУЯ
                         syomaInner.className = 'character lean-right';
-                        vikaInner.className = 'character lean-left';
+                        document.getElementById('vika-inner').className = 'character lean-left';
+                        soundWin();
 
-                        const miniHeart = document.createElement('div');
-                        miniHeart.className = 'mini-heart';
-                        miniHeart.innerText = '💗';
-                        miniHeart.style.position = 'absolute';
-                        miniHeart.style.left = (vRect.left - 20) + 'px';
-                        miniHeart.style.bottom = 'calc(20vh + 60px)';
-                        miniHeart.style.fontSize = '45px';
-                        miniHeart.style.zIndex = '5';
-                        miniHeart.style.animation = 'miniHeartFly 1.5s ease-out forwards';
-                        gameArea.appendChild(miniHeart);
+                        const mh = document.createElement('div');
+                        mh.className = 'mini-heart'; mh.innerText = '💗';
+                        mh.style.position = 'absolute'; mh.style.left = (vRect.left - 20) + 'px';
+                        mh.style.bottom = 'calc(20vh + 60px)'; mh.style.fontSize = '45px';
+                        mh.style.zIndex = '5'; mh.style.animation = 'miniHeartFly 1.5s ease-out forwards';
+                        gameArea.appendChild(mh);
 
-                        // Через 1.5 сек закрываем игру и отправляем поцелуй
                         setTimeout(() => {
-                            stopGame();
-                            sendKiss();
-                            try { tg.sendData("Сёма спас свою Принцессу! 🏃🏻‍♂️❤️👸🏻"); } catch(e){}
-                        }, 1500);
+                            stopGame(); sendKiss();
+                            try { tg.sendData(`Сёма собрал ${score} сердец, преодолел все преграды и поцеловал Вику! 🏃🏻‍♂️❤️👸🏼`); } catch(e){}
+                        }, 2000);
                         return;
                     }
                 }
             }
-
-            reqId = requestAnimationFrame(gameLoop);
+            if(gameActive) reqId = requestAnimationFrame(gameLoop);
         }
     </script>
 </body>
