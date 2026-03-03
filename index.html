@@ -14,6 +14,7 @@
             font-family: 'Segoe UI', sans-serif; margin: 0;
             display: flex; align-items: center; justify-content: center;
             height: 100vh; width: 100vw; color: #d63384; overflow: hidden; position: relative;
+            touch-action: none; /* Отключаем свайпы и зум на телефоне */
         }
 
         /* Мерцающие частицы */
@@ -43,6 +44,7 @@
         button {
             background: #d63384; color: white; border: none; padding: 10px 5px;
             border-radius: 12px; font-weight: bold; font-size: 13px; transition: 0.3s;
+            cursor: pointer;
         }
         .btn-full { grid-column: span 2; background: #ff4d6d !important; padding: 14px; font-size: 15px; }
         .btn-game { grid-column: span 2; background: #8e44ad !important; padding: 14px; font-size: 15px; margin-top: 5px;}
@@ -52,6 +54,7 @@
             margin-top: 15px; padding: 10px; background: rgba(214, 51, 132, 0.1);
             border-radius: 15px; font-size: 13px; font-style: italic; min-height: 40px;
             display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
         }
 
         .floating-heart {
@@ -77,11 +80,12 @@
         #game-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0,0,0,0.85); z-index: 9990; align-items: center; justify-content: center;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px); touch-action: none;
         }
         #game-area {
             position: relative; width: 100%; height: 50vh; background: linear-gradient(#87CEEB, #e0f6ff);
             border-top: 6px solid #fff; border-bottom: 25px solid #4CAF50; overflow: hidden;
+            pointer-events: none; /* Отключаем клики внутри зоны, ловим на всем overlay */
         }
         
         .sprite { position: absolute; bottom: 0; font-size: 45px; line-height: 45px; z-index: 2; display: flex; justify-content: center; transform-origin: bottom center; }
@@ -107,7 +111,7 @@
             100% { opacity: 0; transform: translateY(-50px) scale(1.5); }
         }
 
-        #syoma { left: 50px; }
+        #syoma { left: 15%; }
         #vika { left: 100%; display: none; }
         .obstacle { position: absolute; bottom: 0; font-size: 35px; line-height: 35px; z-index: 1; }
         #instruction {
@@ -116,7 +120,8 @@
         }
         .close-game {
             position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.5);
-            border: none; color: white; padding: 10px; border-radius: 50%; font-size: 16px; z-index: 10;
+            border: none; color: white; padding: 10px 15px; border-radius: 50%; font-size: 16px; z-index: 10000;
+            pointer-events: auto; /* Включаем клики только для крестика */
         }
     </style>
 </head>
@@ -139,9 +144,9 @@
     </div>
 
     <div id="game-overlay">
-        <div id="game-area" onmousedown="jump(event)" ontouchstart="jump(event)">
-            <button class="close-game" onclick="stopGame(event)">❌</button>
-            <div id="instruction">Тапай, чтобы перепрыгнуть!</div>
+        <button class="close-game" id="close-btn">❌</button>
+        <div id="game-area">
+            <div id="instruction">Тапай в любом месте экрана!</div>
             <div id="syoma" class="sprite"><div id="syoma-inner" class="inner-sprite">👨🏻</div></div>
             <div id="vika" class="sprite"><div id="vika-inner" class="inner-sprite">👩🏻</div></div>
         </div>
@@ -226,30 +231,32 @@
             for (let i = 0; i < 10; i++) setTimeout(createHeartEffect, i * 100);
         };
 
-        /* ================= ЛОГИКА ИГРЫ ================= */
+        /* ================= ЛОГИКА ИГРЫ (ОПТИМИЗАЦИЯ ДЛЯ ТЕЛЕФОНОВ) ================= */
         let gameActive = false;
         let syomaY = 0;
         let velocityY = 0;
-        const gravity = 0.6;      // Уменьшили гравитацию (плавнее)
-        const jumpPower = 12;     // Снизили силу прыжка под новую гравитацию
-        let gameSpeed = 3.5;      // Начальная скорость ниже
+        const gravity = 0.6;      
+        const jumpPower = 12.5; // Чуть сильнее прыжок, чтобы наверняка перелетать кактусы    
+        let gameSpeed = 3.5;      
         let distance = 0;
-        const finishDistance = 800; // Немного сократили дистанцию
+        const finishDistance = 800; 
         let spawnTimer = 0;
         let reqId;
-        let isFinishing = false;  // Флаг окончания игры
+        let isFinishing = false;  
 
+        const overlay = document.getElementById('game-overlay');
         const syomaEl = document.getElementById('syoma');
         const syomaInner = document.getElementById('syoma-inner');
         const vikaEl = document.getElementById('vika');
         const vikaInner = document.getElementById('vika-inner');
         const gameArea = document.getElementById('game-area');
+        const closeBtn = document.getElementById('close-btn');
 
         function startGame() {
-            document.getElementById('game-overlay').style.display = 'flex';
+            overlay.style.display = 'flex';
             resetGame();
             gameActive = true;
-            document.getElementById('instruction').innerText = "Тапай, чтобы перепрыгнуть!";
+            document.getElementById('instruction').innerText = "Тапай в любом месте экрана!";
             reqId = requestAnimationFrame(gameLoop);
         }
 
@@ -258,8 +265,7 @@
             isFinishing = false;
             
             syomaEl.style.bottom = '0px';
-            syomaEl.style.left = '50px';
-            syomaInner.className = 'inner-sprite running'; // Возвращаем бег
+            syomaInner.className = 'inner-sprite running'; 
             
             vikaEl.style.display = 'none';
             vikaEl.style.left = '100%';
@@ -268,21 +274,34 @@
             document.querySelectorAll('.obstacle, .mini-heart').forEach(e => e.remove());
         }
 
-        function jump(e) {
-            if (e) e.preventDefault(); 
+        // ГЛОБАЛЬНЫЙ обработчик тапов для телефона
+        function handleTap(e) {
+            // Игнорируем нажатие, если кликнули на крестик
+            if (e.target === closeBtn) return;
+            e.preventDefault(); 
+            
             if (!gameActive || isFinishing) return;
-            if (syomaY === 0) { 
+            
+            // Если мы на земле (или почти на земле - защита от багов физики)
+            if (syomaY <= 1) { 
                 velocityY = jumpPower;
-                syomaInner.classList.remove('running'); // Перестаем "перебирать ногами" в прыжке
+                syomaInner.classList.remove('running'); 
                 if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             }
         }
 
+        // Вешаем события на весь черный фон
+        overlay.addEventListener('touchstart', handleTap, { passive: false });
+        overlay.addEventListener('mousedown', handleTap);
+
+        closeBtn.addEventListener('click', stopGame);
+        closeBtn.addEventListener('touchstart', stopGame, { passive: false });
+
         function stopGame(e) {
-            if (e) e.stopPropagation();
+            if (e) { e.preventDefault(); e.stopPropagation(); }
             gameActive = false;
             cancelAnimationFrame(reqId);
-            document.getElementById('game-overlay').style.display = 'none';
+            overlay.style.display = 'none';
         }
 
         function gameLoop() {
@@ -294,7 +313,7 @@
             
             // Приземление
             if (syomaY <= 0) { 
-                if (syomaY < 0 && !isFinishing) syomaInner.classList.add('running'); // Снова бежим
+                if (syomaY < 0 && !isFinishing) syomaInner.classList.add('running'); 
                 syomaY = 0; 
                 velocityY = 0; 
             }
@@ -302,13 +321,12 @@
 
             if (!isFinishing) {
                 distance += gameSpeed;
-                gameSpeed += 0.001; // Ускоряемся очень медленно
+                gameSpeed += 0.001; 
             }
 
             // 2. Спавн препятствий
             if (distance < finishDistance && !isFinishing) {
                 spawnTimer++;
-                // Препятствия появляются реже
                 if (spawnTimer > 90 + Math.random() * 60) {
                     const obs = document.createElement('div');
                     obs.className = 'obstacle';
@@ -328,12 +346,12 @@
                 currentLeft -= gameSpeed;
                 obs.style.left = currentLeft + 'px';
 
-                // Столкновение (хитбокс мягкий)
                 const obsRect = obs.getBoundingClientRect();
+                // Уменьшенный (прощающий) хитбокс специально для мобильных экранов
                 if (
-                    syomaRect.right - 15 > obsRect.left &&
-                    syomaRect.left + 15 < obsRect.right &&
-                    syomaRect.bottom > obsRect.top + 15
+                    syomaRect.right - 20 > obsRect.left &&
+                    syomaRect.left + 20 < obsRect.right &&
+                    syomaRect.bottom > obsRect.top + 20
                 ) {
                     hit = true;
                 }
@@ -346,7 +364,7 @@
                 gameActive = false;
                 syomaInner.classList.remove('running');
                 document.getElementById('instruction').innerText = "Ой, споткнулся! 🥺";
-                setTimeout(() => { if (document.getElementById('game-overlay').style.display === 'flex') startGame(); }, 1500);
+                setTimeout(() => { if (overlay.style.display === 'flex') startGame(); }, 1500);
                 return;
             }
 
@@ -355,29 +373,25 @@
                 vikaEl.style.display = 'block';
                 let vikaLeft = parseFloat(vikaEl.style.left) || gameArea.offsetWidth;
                 
-                // Вика появляется и стоит справа
                 if (vikaLeft > gameArea.offsetWidth * 0.7) {
                     vikaEl.style.left = (vikaLeft - gameSpeed) + 'px';
                 } else {
-                    // Сёма бежит к ней
                     isFinishing = true;
-                    let syomaLeft = parseFloat(syomaEl.style.left) || 50;
-                    syomaEl.style.left = (syomaLeft + 2.5) + 'px';
+                    // Сёма бежит к ней по центру
+                    let sRect = syomaEl.getBoundingClientRect();
+                    let vRect = vikaEl.getBoundingClientRect();
                     
-                    const vRect = vikaEl.getBoundingClientRect();
-                    const sRect = syomaEl.getBoundingClientRect();
-
-                    // Встретились!
-                    if (sRect.right >= vRect.left + 5 && gameActive) {
-                        gameActive = false; // Останавливаем цикл игры
+                    if (sRect.right < vRect.left + 5) {
+                        syomaEl.style.left = (parseFloat(syomaEl.style.left || 15) + 3) + 'px';
+                    } else if (gameActive) {
+                        gameActive = false; 
                         syomaInner.classList.remove('running');
                         document.getElementById('instruction').innerText = "ЛЮБЛЮ ТЕБЯ! ❤️";
                         
-                        // Анимация поцелуя: наклоняются друг к другу
+                        // Анимация поцелуя
                         syomaInner.className = 'inner-sprite lean-right';
                         vikaInner.className = 'inner-sprite lean-left';
 
-                        // Маленькое сердечко между ними
                         const miniHeart = document.createElement('div');
                         miniHeart.className = 'mini-heart';
                         miniHeart.innerText = '💗';
@@ -388,11 +402,10 @@
                         miniHeart.style.animation = 'miniHeartFly 1s ease-out forwards';
                         gameArea.appendChild(miniHeart);
 
-                        // Через секунду закрываем игру и кидаем большой поцелуй в чат
                         setTimeout(() => {
                             stopGame();
                             sendKiss();
-                            try { tg.sendData("Сёма преодолел все преграды и поцеловал Вику! 🏃‍♂️❤️👧🏻"); } catch(e){}
+                            try { tg.sendData("Сёма преодолел все преграды и поцеловал Вику! 🏃‍♂️❤️👩🏻"); } catch(e){}
                         }, 1200);
                         return;
                     }
