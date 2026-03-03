@@ -136,7 +136,7 @@
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.95); z-index: 10001;
             align-items: center; justify-content: center; flex-direction: column;
-            opacity: 0; transition: opacity 1s ease; cursor: pointer; pointer-events: auto;
+            opacity: 0; transition: opacity 0.8s ease; pointer-events: auto;
         }
         .finale-photo {
             width: 85%; max-width: 350px; border-radius: 20px;
@@ -147,12 +147,14 @@
             color: #ff99cc; font-size: 32px; font-weight: 900; margin-top: 25px;
             text-shadow: 2px 2px 5px #000, 0 0 10px #ff4d6d; text-align: center;
         }
-        .finale-hint {
-            color: rgba(255,255,255,0.6); margin-top: 15px; font-size: 14px;
-            animation: blinkHint 2s infinite;
+        .finish-button {
+            margin-top: 25px; background: #e52521; border: 3px solid #fff; color: white; 
+            padding: 15px 25px; border-radius: 15px; font-size: 18px; font-weight: bold; 
+            cursor: pointer; box-shadow: 0 5px 15px rgba(229, 37, 33, 0.5);
+            animation: pulseBtn 1.5s infinite alternate;
         }
         @keyframes pulseGlow { 0% { box-shadow: 0 0 20px #ff4d6d; } 100% { box-shadow: 0 0 50px #ff66b2; } }
-        @keyframes blinkHint { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        @keyframes pulseBtn { 0% { transform: scale(1); } 100% { transform: scale(1.05); } }
     </style>
 </head>
 <body>
@@ -206,10 +208,10 @@
             </div>
         </div>
 
-        <div id="finale-modal" onclick="closeFinale()">
+        <div id="finale-modal">
             <img src="https://i.postimg.cc/HnMVCPYn/photo-3-2026-02-28-17-22-30.jpg" alt="Мы" class="finale-photo">
             <div class="finale-text">Я люблю тебя<br>бесконечно! ❤️</div>
-            <div class="finale-hint">(Нажми на экран, чтобы отправить результат)</div>
+            <button class="finish-button" id="final-send-btn">ВЕРНУТЬСЯ В ЧАТ 💌</button>
         </div>
     </div>
 
@@ -229,12 +231,18 @@
             document.body.appendChild(heart); setTimeout(() => heart.remove(), 1500);
         }
 
-        function sendKiss() {
+        function triggerKissVisuals() {
             if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
             const kiss = document.createElement('div'); kiss.innerHTML = '💋'; kiss.className = 'big-kiss';
             document.body.appendChild(kiss); setTimeout(() => kiss.remove(), 800);
             for (let i = 0; i < 12; i++) setTimeout(createHeartEffect, i * 40);
         }
+
+        function sendKiss() {
+            triggerKissVisuals();
+            try { tg.sendData('Поцелуй отправлен! 💋'); } catch(e) {}
+        }
+
         function sendMsg(text) { if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium'); for (let i = 0; i < 6; i++) setTimeout(createHeartEffect, i * 60); try { tg.sendData(text); } catch(e) {} }
 
         const startDate = new Date(2023, 8, 26); 
@@ -263,7 +271,7 @@
         /* ================= ЛОГИКА ИГРЫ ================= */
         let gameActive = false, isFinishing = false, reqId;
         let syomaY = 0, velocityY = 0, gravity = 0.7, jumpPower = 14.5;
-        let gameSpeed = 5.5, maxSpeed = 10, distance = 0, finishDistance = 15000; 
+        let gameSpeed = 5.5, maxSpeed = 10, distance = 0, finishDistance = 20000; // Дистанция 20000!
         let spawnTimer = 0, cloudTimer = 0, bgPos = 0;
         let score = 0, lives = 3, invincible = false;
         let superMode = false, superTimer = 0;
@@ -301,6 +309,8 @@
             applyDayNightTheme(); 
 
             overlay.style.display = 'flex';
+            document.getElementById('finale-modal').style.display = 'none';
+            
             syomaY = 0; velocityY = 0; distance = 0; spawnTimer = 0; gameSpeed = 5.5; bgPos = 0;
             score = 0; lives = 3; invincible = false; isFinishing = false; superMode = false; superTimer = 0;
             updateHUD();
@@ -318,7 +328,6 @@
         }
 
         function handleTap(e) {
-            // Игнорируем клики по модалке и кнопке закрытия
             if (e.target.id === 'close-btn' || e.target.closest('#finale-modal')) return;
             e.preventDefault(); 
             if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -344,16 +353,18 @@
             gameActive = false; cancelAnimationFrame(reqId); overlay.style.display = 'none';
         }
 
-        // ОТПРАВКА ДАННЫХ ТОЛЬКО ПОСЛЕ КЛИКА ПО ФОТО
-        function closeFinale() {
-            document.getElementById('finale-modal').style.opacity = '0';
-            setTimeout(() => { 
-                document.getElementById('finale-modal').style.display = 'none'; 
-                stopGame();
-                sendKiss();
-                try { tg.sendData(`Сёма собрал ${score} сердец, победил всех птиц и поцеловал Вику! 🏃🏻‍♂️❤️👸🏼`); } catch(e){}
-            }, 500);
+        function submitScore(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            document.getElementById('finale-modal').style.display = 'none'; 
+            stopGame();
+            triggerKissVisuals(); 
+            try { 
+                tg.sendData(`Сёма собрал ${score} сердец, пробежал огромный путь и поцеловал Вику! 🏃🏻‍♂️❤️👸🏼`); 
+            } catch(e){}
         }
+
+        document.getElementById('final-send-btn').addEventListener('click', submitScore);
+        document.getElementById('final-send-btn').addEventListener('touchstart', submitScore, {passive: false});
 
         function hitObstacle(obs) {
             if (superMode) {
@@ -509,10 +520,9 @@
                     isFinishing = true;
                     let sRect = syomaEl.getBoundingClientRect(), vRect = vikaEl.getBoundingClientRect();
                     
-                    // БЕЗОПАСНОЕ ДВИЖЕНИЕ СЁМЫ
                     if (sRect.right < vRect.left + 5) {
                         let currentLeft = parseFloat(syomaEl.style.left || 50);
-                        syomaEl.style.left = (currentLeft + 4) + 'px';
+                        syomaEl.style.left = (currentLeft + 8) + 'px';
                     } else if (gameActive) {
                         gameActive = false; 
                         syomaInner.classList.remove('running');
@@ -530,13 +540,11 @@
                         mh.style.zIndex = '5'; mh.style.animation = 'miniHeartFly 1.5s ease-out forwards';
                         gameArea.appendChild(mh);
 
-                        // ФИНАЛ: ПОЯВЛЕНИЕ ФОТО
                         setTimeout(() => {
                             const modal = document.getElementById('finale-modal');
                             modal.style.display = 'flex';
-                            // Микрозадержка для браузера, чтобы сработала CSS анимация opacity
                             setTimeout(() => { modal.style.opacity = '1'; }, 50);
-                        }, 1000); // Ускорил появление фото до 1 секунды!
+                        }, 800);
                         return;
                     }
                 }
