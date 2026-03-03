@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Для моей Вики</title>
+    <link rel="preload" as="image" href="https://i.postimg.cc/HnMVCPYn/photo-3-2026-02-28-17-22-30.jpg">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -132,10 +133,10 @@
 
         /* --- ГРАНД ФИНАЛ --- */
         #finale-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.95); z-index: 10001;
             align-items: center; justify-content: center; flex-direction: column;
-            opacity: 0; transition: opacity 1.5s ease; cursor: pointer;
+            opacity: 0; transition: opacity 1s ease; cursor: pointer; pointer-events: auto;
         }
         .finale-photo {
             width: 85%; max-width: 350px; border-radius: 20px;
@@ -148,9 +149,10 @@
         }
         .finale-hint {
             color: rgba(255,255,255,0.6); margin-top: 15px; font-size: 14px;
-            animation: blink 2s infinite;
+            animation: blinkHint 2s infinite;
         }
         @keyframes pulseGlow { 0% { box-shadow: 0 0 20px #ff4d6d; } 100% { box-shadow: 0 0 50px #ff66b2; } }
+        @keyframes blinkHint { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -203,12 +205,12 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <div id="finale-modal" onclick="closeFinale()">
-        <img src="https://i.postimg.cc/HnMVCPYn/photo-3-2026-02-28-17-22-30.jpg" alt="Мы" class="finale-photo">
-        <div class="finale-text">Я люблю тебя<br>бесконечно! ❤️</div>
-        <div class="finale-hint">(Нажми на экран, чтобы отправить результат)</div>
+        <div id="finale-modal" onclick="closeFinale()">
+            <img src="https://i.postimg.cc/HnMVCPYn/photo-3-2026-02-28-17-22-30.jpg" alt="Мы" class="finale-photo">
+            <div class="finale-text">Я люблю тебя<br>бесконечно! ❤️</div>
+            <div class="finale-hint">(Нажми на экран, чтобы отправить результат)</div>
+        </div>
     </div>
 
     <script>
@@ -316,7 +318,8 @@
         }
 
         function handleTap(e) {
-            if (e.target.id === 'close-btn') return;
+            // Игнорируем клики по модалке и кнопке закрытия
+            if (e.target.id === 'close-btn' || e.target.closest('#finale-modal')) return;
             e.preventDefault(); 
             if(audioCtx.state === 'suspended') audioCtx.resume();
             instruction.style.opacity = '0'; 
@@ -506,8 +509,10 @@
                     isFinishing = true;
                     let sRect = syomaEl.getBoundingClientRect(), vRect = vikaEl.getBoundingClientRect();
                     
+                    // БЕЗОПАСНОЕ ДВИЖЕНИЕ СЁМЫ
                     if (sRect.right < vRect.left + 5) {
-                        syomaEl.style.left = (syomaEl.offsetLeft + 4) + 'px';
+                        let currentLeft = parseFloat(syomaEl.style.left || 50);
+                        syomaEl.style.left = (currentLeft + 4) + 'px';
                     } else if (gameActive) {
                         gameActive = false; 
                         syomaInner.classList.remove('running');
@@ -525,13 +530,13 @@
                         mh.style.zIndex = '5'; mh.style.animation = 'miniHeartFly 1.5s ease-out forwards';
                         gameArea.appendChild(mh);
 
-                        // ФИНАЛ: ФОТОГРАФИЯ
+                        // ФИНАЛ: ПОЯВЛЕНИЕ ФОТО
                         setTimeout(() => {
                             const modal = document.getElementById('finale-modal');
                             modal.style.display = 'flex';
-                            setTimeout(() => { modal.style.opacity = '1'; }, 100);
-                            // tg.sendData отсюда убрал, оно сработает только при клике по фото
-                        }, 1800);
+                            // Микрозадержка для браузера, чтобы сработала CSS анимация opacity
+                            setTimeout(() => { modal.style.opacity = '1'; }, 50);
+                        }, 1000); // Ускорил появление фото до 1 секунды!
                         return;
                     }
                 }
