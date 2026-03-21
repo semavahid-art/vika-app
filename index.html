@@ -36,7 +36,8 @@
         .btn-full { grid-column: span 2; background: #ff4d6d !important; padding: 14px; font-size: 15px; }
         .btn-game { grid-column: span 2; background: #e52521 !important; padding: 14px; font-size: 15px; margin-top: 5px; border-bottom: 4px solid #b31b17;}
         button:active { transform: translateY(2px); border-bottom-width: 2px; }
-
+        .btn-compass { grid-column: span 2; background: #6f42c1 !important; padding: 14px; font-size: 15px; margin-top: 5px; border-bottom: 4px solid #5a32a3; color: white; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
+        .btn-compass:active { transform: translateY(2px); border-bottom-width: 2px; } 
         .floating-heart { position: fixed; pointer-events: none; z-index: 9999; animation: fly 1.5s ease-out forwards; }
         @keyframes fly { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(calc(-50% + var(--tw-x)), calc(-50% + var(--tw-y))) scale(1.5); opacity: 0; } }
         .big-kiss { position: fixed; top: 50%; left: 50%; z-index: 10000; pointer-events: none; animation: kissAnim 0.8s ease-out forwards; }
@@ -180,7 +181,8 @@
             <button onclick="sendMsg('Очень скучаю... 🥺')">Скучаю 🥺</button>
             <button onclick="sendMsg('Люблю тебя! ❤️')">Люблю ❤️</button>
             <button onclick="sendMsg('Позвони мне? 📞')">Звонок 📞</button>
-            <button class="btn-full" onclick="sendKiss()">КИДАТЬ БУСЬКУ 💋</button>
+            <button class="btn-full" onclick="sendKiss()">КИДАТЬ БУСЬКУ 💋</button> 
+            <button class="btn-compass" onclick="sendLocation()">🧭 Обновить компас</button> 
             <button class="btn-game" onclick="startGame()">🍄 Спасти Принцессу Вику!</button>
         </div>
         <div id="compliment-box" onclick="changePhrase()">Нажми, чтобы получить комплимент ✨</div>
@@ -232,6 +234,41 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready(); tg.expand(); 
+
+        // --- ЛОГИКА ГЕОЛОКАЦИИ ---
+        let userLat = null;
+        let userLon = null;
+
+        // Как только открыли Web App - тихо запрашиваем координаты в фоне
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => { userLat = pos.coords.latitude; userLon = pos.coords.longitude; },
+                (err) => { console.log("Гео не получено автоматом", err); }
+            );
+        }
+
+        // Функция срабатывает при нажатии на кнопку компаса
+        function sendLocation() {
+            if (userLat && userLon) {
+                // Координаты успели загрузиться - шлем их боту и закрываем окно
+                tg.sendData(JSON.stringify({ action: "location", lat: userLat, lon: userLon }));
+            } else {
+                // Координат нет (например, первый запуск) - запрашиваем принудительно
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            tg.sendData(JSON.stringify({ action: "location", lat: pos.coords.latitude, lon: pos.coords.longitude }));
+                        },
+                        (err) => { 
+                            alert("Нужно разрешить доступ к геопозиции в браузере, чтобы компас заработал! 🧭"); 
+                        }
+                    );
+                } else {
+                    alert("Твой телефон не поддерживает геолокацию в браузере.");
+                }
+            }
+        }
+        // --- КОНЕЦ ЛОГИКИ ГЕОЛОКАЦИИ ---
 
         const phrases = ["Ты — моё самое дорогое сокровище ✨", "Твоя улыбка — это чистый кайф 😍", "Самая красивая девочка в мире! ❤️", "Обожаю твой голос и смех 🌸", "Ты — мой личный сорт счастья 🌟", "Хочу быть рядом каждую секунду 🥰"];
         
