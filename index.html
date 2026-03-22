@@ -38,6 +38,19 @@
         button:active { transform: translateY(2px); border-bottom-width: 2px; }
         .btn-compass { grid-column: span 2; background: #6f42c1 !important; padding: 14px; font-size: 15px; margin-top: 5px; border-bottom: 4px solid #5a32a3; color: white; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
         .btn-compass:active { transform: translateY(2px); border-bottom-width: 2px; } 
+        
+        /* --- ПУЛЬС --- */
+        .btn-pulse { grid-column: span 2; background: #8b0000 !important; padding: 14px; font-size: 15px; margin-top: 5px; border-bottom: 4px solid #5a0000; }
+        .btn-pulse:active { transform: translateY(2px); border-bottom-width: 2px; }
+        
+        #pulse-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #050505; z-index: 10005; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #heart-container { display: flex; flex-direction: column; align-items: center; opacity: 0.7; transition: opacity 0.3s; cursor: pointer; }
+        #big-heart { font-size: 130px; text-shadow: 0 0 30px rgba(255, 0, 50, 0.7); transition: transform 0.1s; }
+        .pulse-hint { margin-top: 40px; font-size: 16px; color: #888; text-transform: uppercase; font-weight: 800; letter-spacing: 2px; }
+
         .floating-heart { position: fixed; pointer-events: none; z-index: 9999; animation: fly 1.5s ease-out forwards; }
         @keyframes fly { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(calc(-50% + var(--tw-x)), calc(-50% + var(--tw-y))) scale(1.5); opacity: 0; } }
         .big-kiss { position: fixed; top: 50%; left: 50%; z-index: 10000; pointer-events: none; animation: kissAnim 0.8s ease-out forwards; }
@@ -183,9 +196,19 @@
             <button onclick="sendMsg('Позвони мне? 📞')">Звонок 📞</button>
             <button class="btn-full" onclick="sendKiss()">КИДАТЬ БУСЬКУ 💋</button> 
             <button class="btn-compass" onclick="sendLocation()">🧭 Обновить компас</button> 
+            <button class="btn-pulse" onclick="showPulseOverlay()">💓 Слушать пульс (Антистресс)</button>
             <button class="btn-game" onclick="startGame()">🍄 Спасти Принцессу Вику!</button>
         </div>
         <div id="compliment-box" onclick="changePhrase()">Нажми, чтобы получить комплимент ✨</div>
+    </div>
+
+    <div id="pulse-overlay">
+        <button class="close-game" onclick="hidePulseOverlay()" style="background: #333; border-color: #555;">X</button>
+        <div id="heart-container">
+            <div id="big-heart">❤️</div>
+            <div class="pulse-hint">Зажми и держи</div>
+        </div>
+        <audio id="lofi-audio" src="mot.mp3" loop crossorigin="anonymous"></audio>
     </div>
 
     <div id="game-overlay">
@@ -239,7 +262,6 @@
         let userLat = null;
         let userLon = null;
 
-        // Как только открыли Web App - тихо запрашиваем координаты в фоне
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => { userLat = pos.coords.latitude; userLon = pos.coords.longitude; },
@@ -247,13 +269,10 @@
             );
         }
 
-        // Функция срабатывает при нажатии на кнопку компаса
         function sendLocation() {
             if (userLat && userLon) {
-                // Координаты успели загрузиться - шлем их боту и закрываем окно
                 tg.sendData(JSON.stringify({ action: "location", lat: userLat, lon: userLon }));
             } else {
-                // Координат нет (например, первый запуск) - запрашиваем принудительно
                 if ("geolocation" in navigator) {
                     navigator.geolocation.getCurrentPosition(
                         (pos) => {
@@ -268,7 +287,6 @@
                 }
             }
         }
-        // --- КОНЕЦ ЛОГИКИ ГЕОЛОКАЦИИ ---
 
         const phrases = ["Ты — моё самое дорогое сокровище ✨", "Твоя улыбка — это чистый кайф 😍", "Самая красивая девочка в мире! ❤️", "Обожаю твой голос и смех 🌸", "Ты — мой личный сорт счастья 🌟", "Хочу быть рядом каждую секунду 🥰"];
         
@@ -317,7 +335,7 @@
         }
         setInterval(updateTimer, 1000); updateTimer();
 
-        /* ================= ЗВУКИ ================= */
+        /* ================= ЗВУКИ И ИГРА ================= */
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playTone(freq, type, duration) {
             try {
@@ -335,6 +353,114 @@
         function soundPowerup() { playTone(400, 'sine', 0.1); setTimeout(()=>playTone(600, 'sine', 0.1), 100); setTimeout(()=>playTone(800, 'sine', 0.3), 200); }
         function soundSmash() { playTone(150, 'square', 0.1); setTimeout(()=>playTone(100, 'sawtooth', 0.2), 50); }
         function soundWin()  { playTone(500, 'square', 0.2); setTimeout(()=>playTone(650, 'square', 0.2), 200); setTimeout(()=>playTone(800, 'square', 0.4), 400); }
+
+        /* ================= ПУЛЬС И АНТИСТРЕСС (LO-FI ЭФФЕКТ) ================= */
+        const pulseOverlay = document.getElementById('pulse-overlay');
+        const heartContainer = document.getElementById('heart-container');
+        const bigHeart = document.getElementById('big-heart');
+        const lofiAudio = document.getElementById('lofi-audio');
+        
+        let pulseInterval;
+        let lofiSetupDone = false;
+        let fadeInterval;
+
+        // Создаем фильтр для звука "как за стеной"
+        function setupLoFi() {
+            if (lofiSetupDone) return;
+            try {
+                const source = audioCtx.createMediaElementSource(lofiAudio);
+                const lowpass = audioCtx.createBiquadFilter();
+                
+                lowpass.type = 'lowpass';
+                lowpass.frequency.value = 350; // Срезаем высокие частоты
+                lowpass.Q.value = 1; // Немного гулкости (теплоты)
+
+                source.connect(lowpass);
+                lowpass.connect(audioCtx.destination);
+                lofiSetupDone = true;
+            } catch (e) { console.log("Фильтр не применился:", e); }
+        }
+
+        function showPulseOverlay() {
+            pulseOverlay.style.display = 'flex';
+        }
+
+        function hidePulseOverlay() {
+            pulseOverlay.style.display = 'none';
+            stopPulse();
+        }
+
+        function startPulse(e) {
+            if (e) e.preventDefault();
+            heartContainer.style.opacity = '1';
+            
+            try { if(audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){}
+            
+            // Навешиваем фильтр при первом клике
+            setupLoFi();
+
+            // Плавное нарастание звука (Fade In)
+            clearInterval(fadeInterval);
+            lofiAudio.volume = 0;
+            lofiAudio.play().catch(e => console.log("Аудио заблокировано браузером", e));
+            
+            fadeInterval = setInterval(() => {
+                if (lofiAudio.volume < 0.9) {
+                    lofiAudio.volume = Math.min(lofiAudio.volume + 0.05, 1);
+                } else {
+                    clearInterval(fadeInterval);
+                }
+            }, 50);
+
+            // Вибрация и анимация сердца
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 100, 100]);
+                pulseInterval = setInterval(() => {
+                    navigator.vibrate([100, 100, 100]);
+                    bigHeart.style.transform = 'scale(1.15)';
+                    setTimeout(() => bigHeart.style.transform = 'scale(1.1)', 100);
+                    setTimeout(() => bigHeart.style.transform = 'scale(1.15)', 200);
+                    setTimeout(() => bigHeart.style.transform = 'scale(1.1)', 300);
+                    setTimeout(() => bigHeart.style.transform = 'scale(1)', 400);
+                }, 1100);
+            } else {
+                pulseInterval = setInterval(() => {
+                    bigHeart.style.transform = 'scale(1.15)';
+                    setTimeout(() => bigHeart.style.transform = 'scale(1.1)', 100);
+                    setTimeout(() => bigHeart.style.transform = 'scale(1.15)', 200);
+                    setTimeout(() => bigHeart.style.transform = 'scale(1.1)', 300);
+                    setTimeout(() => bigHeart.style.transform = 'scale(1)', 400);
+                }, 1100);
+            }
+        }
+
+        function stopPulse(e) {
+            if (e) e.preventDefault();
+            heartContainer.style.opacity = '0.7';
+            bigHeart.style.transform = 'scale(1)';
+            
+            // Плавное затухание (Fade Out)
+            clearInterval(fadeInterval);
+            let vol = lofiAudio.volume;
+            fadeInterval = setInterval(() => {
+                if (vol > 0.05) {
+                    vol -= 0.05;
+                    lofiAudio.volume = Math.max(vol, 0);
+                } else {
+                    clearInterval(fadeInterval);
+                    lofiAudio.pause();
+                }
+            }, 50);
+
+            clearInterval(pulseInterval);
+            if (navigator.vibrate) navigator.vibrate(0);
+        }
+
+        heartContainer.addEventListener('touchstart', startPulse, {passive: false});
+        heartContainer.addEventListener('touchend', stopPulse);
+        heartContainer.addEventListener('touchcancel', stopPulse);
+        heartContainer.addEventListener('mousedown', startPulse);
+        window.addEventListener('mouseup', stopPulse);
 
         /* ================= ЛОГИКА ИГРЫ ================= */
         let gameActive = false, isFinishing = false, isFinaleTriggered = false, reqId;
@@ -397,7 +523,7 @@
         }
 
         function handleTap(e) {
-            if (e.target.id === 'close-btn' || e.target.closest('#finale-modal')) return;
+            if (e.target.id === 'close-btn' || e.target.closest('#finale-modal') || e.target.closest('#pulse-overlay')) return;
             e.preventDefault(); 
             try { if(audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){}
             instruction.style.opacity = '0'; 
@@ -541,7 +667,6 @@
                     if (rand < 0.05 && !superMode) {
                         const star = document.createElement('div'); star.className = 'collectible star'; star.innerText = '⭐';
                         star.style.left = gameArea.offsetWidth + 'px'; 
-                        // СУПЕР-ИСПРАВЛЕНИЕ: Звезда спавнится строго ВЫШЕ головы (от 110px и выше)
                         star.style.bottom = `calc(20vh + ${110 + Math.random() * 40}px)`; 
                         gameArea.appendChild(star);
                     } 
@@ -551,14 +676,12 @@
                         itemObj.className = isBomb ? 'collectible bomb' : 'collectible heart'; 
                         itemObj.innerText = isBomb ? '💣' : '💖';
                         itemObj.style.left = gameArea.offsetWidth + 'px'; 
-                        // СУПЕР-ИСПРАВЛЕНИЕ: Бомбы и сердечки только ВЫШЕ головы (от 110px)
                         itemObj.style.bottom = `calc(20vh + ${110 + Math.random() * 40}px)`; 
                         gameArea.appendChild(itemObj);
                     } else if (rand < 0.55) {
                         const isHighBird = Math.random() > 0.5;
                         const birdObj = document.createElement('div'); birdObj.className = 'obstacle bird'; birdObj.innerText = '🦅';
                         birdObj.style.left = gameArea.offsetWidth + 'px'; 
-                        // СУПЕР-ИСПРАВЛЕНИЕ: Высокая птица на 110px, низкая на 15px
                         birdObj.style.bottom = isHighBird ? 'calc(20vh + 110px)' : 'calc(20vh + 15px)'; 
                         gameArea.appendChild(birdObj);
                     } else {
@@ -578,7 +701,6 @@
                 if (l < -200) c.remove();
             });
 
-            // УМЕНЬШЕННЫЙ ХИТБОКС ДЛЯ ПРЕДМЕТОВ В ВОЗДУХЕ
             document.querySelectorAll('.collectible:not(.smashed)').forEach(item => {
                 let currentLeft = parseFloat(item.style.left); currentLeft -= gameSpeed; item.style.left = currentLeft + 'px';
                 const iRect = item.getBoundingClientRect();
@@ -604,7 +726,6 @@
                 if (currentLeft < -60) item.remove();
             });
 
-            // УМЕНЬШЕННЫЙ ХИТБОКС ДЛЯ ПРЕГРАД
             document.querySelectorAll('.obstacle:not(.smashed)').forEach(obs => {
                 let currentLeft = parseFloat(obs.style.left); currentLeft -= gameSpeed; obs.style.left = currentLeft + 'px';
                 const obsRect = obs.getBoundingClientRect();
