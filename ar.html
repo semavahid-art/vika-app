@@ -29,6 +29,8 @@
             <img id="photo4" src="https://i.postimg.cc/wtLkdNZx/photo-4-2026-02-28-17-22-30.jpg" crossorigin="anonymous">
             <img id="photo5" src="https://i.postimg.cc/7ft91wS4/photo-5-2026-02-28-17-22-30.jpg" crossorigin="anonymous">
             <img id="photo6" src="https://i.postimg.cc/zbNFDBYw/photo-6-2026-02-28-17-22-30.jpg" crossorigin="anonymous">
+            
+            <img id="heart-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Heart_coraz%C3%B3n.svg/512px-Heart_coraz%C3%B3n.svg.png" crossorigin="anonymous">
         </a-assets>
 
         <a-marker preset="hiro">
@@ -36,7 +38,6 @@
             <a-box position="0 1 0" 
                    material="src: #photo1; side: double; opacity: 0.95; filtering: anisotropic; anisotropicFiltering: 16; mipmap: true;" 
                    animation="property: rotation; to: 0 360 0; loop: true; dur: 12000; easing: linear">
-                
                 <a-entity material="src: #photo2; filtering: anisotropic;" geometry="primitive: plane; width: 1; height: 1;" position="0 0 0.501"></a-entity>
                 <a-entity material="src: #photo3; filtering: anisotropic;" geometry="primitive: plane; width: 1; height: 1;" position="0 0 -0.501" rotation="0 180 0"></a-entity>
                 <a-entity material="src: #photo4; filtering: anisotropic;" geometry="primitive: plane; width: 1; height: 1;" position="0.501 0 0" rotation="0 90 0"></a-entity>
@@ -46,17 +47,15 @@
             </a-box>
 
             <a-entity position="0 1 0" animation="property: rotation; to: 0 -360 0; loop: true; dur: 9000; easing: linear">
-                
-                <a-plane position="0 0 1.5" rotation="0 0 0" material="src: #photo1; color: #ff1493; transparent: true; opacity: 0.8; alphaTest: 0.5;" geometry="primitive: plane; width: 0.4; height: 0.4;"></a-plane>
-                <a-plane position="0 0 -1.5" rotation="0 180 0" material="src: #photo1; color: #ff1493; transparent: true; opacity: 0.8; alphaTest: 0.5;" geometry="primitive: plane; width: 0.4; height: 0.4;"></a-plane>
-                <a-plane position="1.5 0 0" rotation="0 90 0" material="src: #photo1; color: #ff1493; transparent: true; opacity: 0.8; alphaTest: 0.5;" geometry="primitive: plane; width: 0.4; height: 0.4;"></a-plane>
-                <a-plane position="-1.5 0 0" rotation="0 -90 0" material="src: #photo1; color: #ff1493; transparent: true; opacity: 0.8; alphaTest: 0.5;" geometry="primitive: plane; width: 0.4; height: 0.4;"></a-plane>
+                <a-plane position="0 0 1.5" rotation="0 0 0" material="src: #heart-img; transparent: true; alphaTest: 0.5;" geometry="primitive: plane; width: 0.5; height: 0.5;"></a-plane>
+                <a-plane position="0 0 -1.5" rotation="0 180 0" material="src: #heart-img; transparent: true; alphaTest: 0.5;" geometry="primitive: plane; width: 0.5; height: 0.5;"></a-plane>
+                <a-plane position="1.5 0 0" rotation="0 90 0" material="src: #heart-img; transparent: true; alphaTest: 0.5;" geometry="primitive: plane; width: 0.5; height: 0.5;"></a-plane>
+                <a-plane position="-1.5 0 0" rotation="0 -90 0" material="src: #heart-img; transparent: true; alphaTest: 0.5;" geometry="primitive: plane; width: 0.5; height: 0.5;"></a-plane>
 
                 <a-entity rotation="45 0 0">
-                    <a-plane position="0 0 1.1" material="color: #ff69b4; transparent: true; alphaTest: 0.5;" geometry="primitive: plane; width: 0.25; height: 0.25;"></a-plane>
-                    <a-plane position="0 0 -1.1" rotation="0 180 0" material="color: #ff69b4; transparent: true; alphaTest: 0.5;" geometry="primitive: plane; width: 0.25; height: 0.25;"></a-plane>
+                    <a-plane position="0 0 1.1" material="src: #heart-img; transparent: true; alphaTest: 0.5;" geometry="primitive: plane; width: 0.3; height: 0.3;"></a-plane>
+                    <a-plane position="0 0 -1.1" rotation="0 180 0" material="src: #heart-img; transparent: true; alphaTest: 0.5;" geometry="primitive: plane; width: 0.3; height: 0.3;"></a-plane>
                 </a-entity>
-
             </a-entity>
 
         </a-marker>
