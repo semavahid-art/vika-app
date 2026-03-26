@@ -48,7 +48,12 @@
                 <a-plane src="#photo6" position="0 -0.5 0" rotation="90 0 0" width="1" height="1"></a-plane>
             </a-entity>
 
-            <a-text id="secret-message" value="You are my everything! <3" position="0 1 0" color="#ff1493" align="center" width="6" scale="0 0 0" animation__pop="property: scale; to: 1 1 1; dur: 1000; easing: easeOutElastic; startEvents: showText"></a-text>
+            <a-entity id="secret-message" scale="0 0 0" position="0 1 0" 
+                      animation__pop="property: scale; to: 1 1 1; dur: 1000; easing: easeOutElastic; startEvents: showText" 
+                      animation__spin="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear">
+                <a-text value="You are my everything! <3" position="0 0 0.1" color="#ff1493" align="center" width="6"></a-text>
+                <a-text value="You are my everything! <3" position="0 0 -0.1" rotation="0 180 0" color="#ff1493" align="center" width="6"></a-text>
+            </a-entity>
 
             <a-entity position="0 1 0" animation="property: rotation; to: 0 -360 0; loop: true; dur: 9000; easing: linear">
                 <a-image src="#heart-img" position="0 0 1.5" rotation="0 0 0" width="0.4" height="0.4" transparent="true"></a-image>
@@ -78,7 +83,7 @@
 
             if(cube) {
                 cube.setAttribute('animation__explode', 'property: scale; to: 0 0 0; dur: 400; easing: easeInBack');
-                cube.setAttribute('animation__spin', 'property: rotation; to: 0 1080 0; dur: 400; easing: easeInCubic');
+                cube.setAttribute('animation__spin2', 'property: rotation; to: 0 1080 0; dur: 400; easing: easeInCubic');
             }
             
             setTimeout(() => {
