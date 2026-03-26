@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -28,6 +28,24 @@
             box-shadow: 0 5px 15px rgba(229, 37, 33, 0.5); animation: pulse 1.5s infinite;
         }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        /* СТИЛИ ДЛЯ СТРАНИЦЫ С ПИСЬМОМ */
+        #love-letter {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.95); z-index: 10000; overflow-y: auto;
+            padding: 50px 20px; box-sizing: border-box;
+            color: #d63384; text-align: left; /* Сделал текст по левому краю для удобства чтения */
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        #love-letter h1 { font-size: 28px; margin-bottom: 20px; text-align: center; }
+        #love-letter p { font-size: 18px; line-height: 1.6; margin-bottom: 15px; font-weight: 500; color: #333; }
+        .close-letter-btn {
+            display: block; width: 100%; margin-top: 30px; padding: 15px 25px; 
+            background: #ff4d6d; color: white; border: none; border-radius: 15px; 
+            font-size: 18px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 77, 109, 0.4);
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -36,6 +54,20 @@
         <h2>👸🏼 AR Магия</h2>
         <p>Включи звук на телефоне на максимум и нажми кнопку ниже, чтобы начать.</p>
         <button id="start-btn">ВКЛЮЧИТЬ МАГИЮ ✨</button>
+    </div>
+
+    <div id="love-letter">
+        <h1>Моей любимой Вике ❤️</h1>
+        
+        <p>Любимая, я тут сидел, думал обо всем, что происходит, и просто понял, что мне жизненно необходимо тебе это сказать. Знаешь, иногда этот мир кажется каким-то ненастоящим, как будто я просто смотрю кино про чужую жизнь, где одна сплошная суета, работа, какие-то проблемы... И единственное, что в этом мире абсолютно настоящее, живое и мое — это ты.</p>
+        
+        <p>Эти тысячи километров между нами иногда просто сводят с ума. Я просыпаюсь с мыслью о тебе и засыпаю с ней же. Я считаю дни до нашей встречи. Когда мне становится тяжело или просто опускаются руки от усталости, я закрываю глаза и представляю, как я выхожу из самолета, как наконец-то обнимаю тебя так крепко, что весь этот внешний шум просто выключается.</p>
+        
+        <p>Я так жду нашу встречу. Хочу просто идти с тобой за руку, смотреть в твои глаза, дышать одним воздухом и понимать, что мы наконец-то рядом. Без экранов телефона, без видеозвонков, без этого мучительного ожидания.</p>
+        
+        <p>Ты — мой якорь. Ради тебя я готов пробивать любые потолки, расти, бежать марафоны и сворачивать горы. Я безумно тебя люблю. Просто знай это каждую секунду, даже когда я занят, загружен или без сил. Ты — лучшее, что есть в моей жизни, и я сделаю всё, чтобы мы были счастливы.</p>
+        
+        <button class="close-letter-btn" onclick="document.getElementById('love-letter').style.display='none'">Вернуться к голограмме</button>
     </div>
 
     <div class="header">Наведи камеру на маркер и ТАПНИ по экрану!</div>
@@ -67,26 +99,6 @@
                 <a-plane src="#photo4" position="-0.5 0 0" rotation="0 -90 0" width="1" height="1"></a-plane>
                 <a-plane src="#photo5" position="0 0.5 0" rotation="-90 0 0" width="1" height="1"></a-plane>
                 <a-plane src="#photo6" position="0 -0.5 0" rotation="90 0 0" width="1" height="1"></a-plane>
-            </a-entity>
-
-            <a-entity id="secret-message" scale="0 0 0" position="0 0 0" 
-                      animation__popscale="property: scale; to: 1.4 1.4 1.4; dur: 2000; easing: easeOutElastic; startEvents: showText" 
-                      animation__popmove="property: position; to: 0 1.2 0; dur: 2000; easing: easeOutElastic; startEvents: showText"
-                      animation__spin="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear">
-                
-                <a-entity position="0 0 0.1">
-                    <a-text value="You are my everything! <3" position="0 0 0" color="#ffb3c6" align="center" width="6"></a-text>
-                    <a-text value="You are my everything! <3" position="0 0 -0.015" color="#ff8fab" align="center" width="6"></a-text>
-                    <a-text value="You are my everything! <3" position="0 0 -0.030" color="#fb6f92" align="center" width="6"></a-text>
-                    <a-text value="You are my everything! <3" position="0 0 -0.045" color="#ff1493" align="center" width="6"></a-text>
-                </a-entity>
-
-                <a-entity position="0 0 -0.1" rotation="0 180 0">
-                    <a-text value="You are my everything! <3" position="0 0 0" color="#ffb3c6" align="center" width="6"></a-text>
-                    <a-text value="You are my everything! <3" position="0 0 -0.015" color="#ff8fab" align="center" width="6"></a-text>
-                    <a-text value="You are my everything! <3" position="0 0 -0.030" color="#fb6f92" align="center" width="6"></a-text>
-                    <a-text value="You are my everything! <3" position="0 0 -0.045" color="#ff1493" align="center" width="6"></a-text>
-                </a-entity>
             </a-entity>
 
             <a-entity position="0 1 0" animation="property: rotation; to: 0 -360 0; loop: true; dur: 9000; easing: linear">
@@ -123,7 +135,6 @@
 
         marker.addEventListener('markerFound', function() {
             if (audioUnlocked) {
-                // Включаем музыку, если она еще не играет
                 songSource.components.sound.playSound();
             }
         });
@@ -135,15 +146,14 @@
         });
 
         window.addEventListener('touchstart', function(e) {
-            if (!audioUnlocked || exploded || e.target.id === 'start-btn') return;
+            if (!audioUnlocked || exploded || e.target.tagName.toLowerCase() === 'button') return;
             
             const cube = document.getElementById('photo-cube');
-            const message = document.getElementById('secret-message');
+            const loveLetter = document.getElementById('love-letter');
             const boomSound = document.getElementById('boom-sound');
             
             exploded = true;
             
-            // Музыку НЕ ВЫКЛЮЧАЕМ. Просто добавляем звук взрыва поверх
             if(boomSound && boomSound.components.sound) boomSound.components.sound.playSound();
 
             if(cube) {
@@ -153,7 +163,7 @@
             
             setTimeout(() => {
                 if(cube) cube.setAttribute('visible', 'false');
-                if(message) message.emit('showText');
+                loveLetter.style.display = 'block';
             }, 500);
         });
     </script>
