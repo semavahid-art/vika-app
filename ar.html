@@ -7,17 +7,39 @@
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; }
+        body { margin: 0; overflow: hidden; font-family: sans-serif; }
         .header {
             position: fixed; top: 0; left: 0; width: 100%; background: rgba(0,0,0,0.6);
-            color: white; padding: 15px; text-align: center; font-family: sans-serif;
+            color: white; padding: 15px; text-align: center;
             font-weight: bold; font-size: 16px; z-index: 10;
         }
+        
+        /* Стили для стартового экрана (снимает блокировку звука на iPhone) */
+        #start-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white; text-align: center; backdrop-filter: blur(5px);
+        }
+        #start-overlay h2 { margin-bottom: 10px; color: #ff9a9e; font-size: 28px;}
+        #start-overlay p { margin-bottom: 30px; font-size: 16px; opacity: 0.8; padding: 0 20px;}
+        #start-btn {
+            background: #e52521; color: white; border: none; padding: 15px 40px;
+            font-size: 20px; font-weight: bold; border-radius: 30px; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(229, 37, 33, 0.5); animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
-    <div class="header">👸🏼❤️👦🏻 Наведи камеру и ТАПНИ по экрану!</div>
+    <div id="start-overlay">
+        <h2>👸🏼 AR Магия</h2>
+        <p>Включи звук на телефоне на максимум и нажми кнопку ниже, чтобы начать.</p>
+        <button id="start-btn">ВКЛЮЧИТЬ МАГИЮ ✨</button>
+    </div>
+
+    <div class="header">Наведи камеру на маркер и ТАПНИ по экрану!</div>
 
     <a-scene embedded arjs='sourceType: webcam; debugUIEnabled: false; trackingMethod: best;' renderer="antialias: true; alpha: true">
         
@@ -36,7 +58,7 @@
 
         <a-marker preset="hiro" smooth="true" smoothCount="10" smoothTolerance=".01" smoothThreshold="5">
             
-            <a-sound src="#main-song" autoplay="true" loop="true"></a-sound>
+            <a-sound id="song-source" src="#main-song" loop="true"></a-sound>
             <a-sound id="boom-sound" src="#disintegrate-sound-file"></a-sound>
 
             <a-entity id="photo-cube" position="0 1 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000; easing: linear">
@@ -49,8 +71,8 @@
             </a-entity>
 
             <a-entity id="secret-message" scale="0 0 0" position="0 1 0" 
-                      animation__pop="property: scale; to: 1 1 1; dur: 1000; easing: easeOutElastic; startEvents: showText" 
-                      animation__spin="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear">
+                      animation__pop="property: scale; to: 1.2 1.2 1.2; dur: 1500; easing: easeOutElastic; startEvents: showText" 
+                      animation__spin="property: rotation; to: 0 360 0; loop: true; dur: 5000; easing: linear">
                 <a-text value="You are my everything! <3" position="0 0 0.1" color="#ff1493" align="center" width="6"></a-text>
                 <a-text value="You are my everything! <3" position="0 0 -0.1" rotation="0 180 0" color="#ff1493" align="center" width="6"></a-text>
             </a-entity>
@@ -68,10 +90,45 @@
     </a-scene>
 
     <script>
-        let exploded = false;
+        // Элементы
+        const startBtn = document.getElementById('start-btn');
+        const startOverlay = document.getElementById('start-overlay');
+        const songAudio = document.getElementById('main-song');
+        const boomAudio = document.getElementById('disintegrate-sound-file');
+        const songSource = document.getElementById('song-source');
+        const marker = document.querySelector('a-marker');
         
-        window.addEventListener('touchstart', function() {
-            if (exploded) return;
+        let audioUnlocked = false;
+        let exploded = false;
+
+        // 1. КЛИК ПО КНОПКЕ "СТАРТ" (Снимаем блокировку iOS)
+        startBtn.addEventListener('click', function() {
+            startOverlay.style.display = 'none'; // Убираем экран
+            
+            // Магический трюк для Safari: запускаем и сразу ставим на паузу
+            songAudio.play().then(() => { songAudio.pause(); }).catch(e => console.log(e));
+            boomAudio.play().then(() => { boomAudio.pause(); }).catch(e => console.log(e));
+            
+            audioUnlocked = true;
+        });
+
+        // 2. УПРАВЛЕНИЕ МУЗЫКОЙ ПРИ НАВЕДЕНИИ
+        marker.addEventListener('markerFound', function() {
+            if (audioUnlocked && !exploded) {
+                songSource.components.sound.playSound();
+            }
+        });
+
+        marker.addEventListener('markerLost', function() {
+            if (songSource.components.sound) {
+                songSource.components.sound.pauseSound();
+            }
+        });
+
+        // 3. ТАП ПО ЭКРАНУ (ВЗРЫВ)
+        window.addEventListener('touchstart', function(e) {
+            // Если тапнули по кнопке старта или звук еще заблокирован - игнорим
+            if (!audioUnlocked || exploded || e.target.id === 'start-btn') return;
             
             const cube = document.getElementById('photo-cube');
             const message = document.getElementById('secret-message');
@@ -79,17 +136,21 @@
             
             exploded = true;
             
+            // Выключаем музыку, включаем звук взрыва
+            if(songSource.components.sound) songSource.components.sound.stopSound();
             if(boomSound && boomSound.components.sound) boomSound.components.sound.playSound();
 
+            // Анимация сжатия куба
             if(cube) {
-                cube.setAttribute('animation__explode', 'property: scale; to: 0 0 0; dur: 400; easing: easeInBack');
-                cube.setAttribute('animation__spin2', 'property: rotation; to: 0 1080 0; dur: 400; easing: easeInCubic');
+                cube.setAttribute('animation__explode', 'property: scale; to: 0 0 0; dur: 500; easing: easeInBack');
+                cube.setAttribute('animation__spin2', 'property: rotation; to: 0 1080 0; dur: 500; easing: easeInCubic');
             }
             
+            // Через полсекунды прячем куб и ПРУЖИНИСТО показываем текст
             setTimeout(() => {
                 if(cube) cube.setAttribute('visible', 'false');
                 if(message) message.emit('showText');
-            }, 400);
+            }, 500);
         });
     </script>
 
