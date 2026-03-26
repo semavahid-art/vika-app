@@ -14,7 +14,6 @@
             font-weight: bold; font-size: 16px; z-index: 10;
         }
         
-        /* Стили для стартового экрана (снимает блокировку звука на iPhone) */
         #start-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85); z-index: 9999;
@@ -70,11 +69,24 @@
                 <a-plane src="#photo6" position="0 -0.5 0" rotation="90 0 0" width="1" height="1"></a-plane>
             </a-entity>
 
-            <a-entity id="secret-message" scale="0 0 0" position="0 1 0" 
-                      animation__pop="property: scale; to: 1.2 1.2 1.2; dur: 1500; easing: easeOutElastic; startEvents: showText" 
-                      animation__spin="property: rotation; to: 0 360 0; loop: true; dur: 5000; easing: linear">
-                <a-text value="You are my everything! <3" position="0 0 0.1" color="#ff1493" align="center" width="6"></a-text>
-                <a-text value="You are my everything! <3" position="0 0 -0.1" rotation="0 180 0" color="#ff1493" align="center" width="6"></a-text>
+            <a-entity id="secret-message" scale="0 0 0" position="0 0 0" 
+                      animation__popscale="property: scale; to: 1.4 1.4 1.4; dur: 2000; easing: easeOutElastic; startEvents: showText" 
+                      animation__popmove="property: position; to: 0 1.2 0; dur: 2000; easing: easeOutElastic; startEvents: showText"
+                      animation__spin="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear">
+                
+                <a-entity position="0 0 0.1">
+                    <a-text value="You are my everything! <3" position="0 0 0" color="#ffb3c6" align="center" width="6"></a-text>
+                    <a-text value="You are my everything! <3" position="0 0 -0.015" color="#ff8fab" align="center" width="6"></a-text>
+                    <a-text value="You are my everything! <3" position="0 0 -0.030" color="#fb6f92" align="center" width="6"></a-text>
+                    <a-text value="You are my everything! <3" position="0 0 -0.045" color="#ff1493" align="center" width="6"></a-text>
+                </a-entity>
+
+                <a-entity position="0 0 -0.1" rotation="0 180 0">
+                    <a-text value="You are my everything! <3" position="0 0 0" color="#ffb3c6" align="center" width="6"></a-text>
+                    <a-text value="You are my everything! <3" position="0 0 -0.015" color="#ff8fab" align="center" width="6"></a-text>
+                    <a-text value="You are my everything! <3" position="0 0 -0.030" color="#fb6f92" align="center" width="6"></a-text>
+                    <a-text value="You are my everything! <3" position="0 0 -0.045" color="#ff1493" align="center" width="6"></a-text>
+                </a-entity>
             </a-entity>
 
             <a-entity position="0 1 0" animation="property: rotation; to: 0 -360 0; loop: true; dur: 9000; easing: linear">
@@ -90,7 +102,6 @@
     </a-scene>
 
     <script>
-        // Элементы
         const startBtn = document.getElementById('start-btn');
         const startOverlay = document.getElementById('start-overlay');
         const songAudio = document.getElementById('main-song');
@@ -101,20 +112,18 @@
         let audioUnlocked = false;
         let exploded = false;
 
-        // 1. КЛИК ПО КНОПКЕ "СТАРТ" (Снимаем блокировку iOS)
         startBtn.addEventListener('click', function() {
-            startOverlay.style.display = 'none'; // Убираем экран
+            startOverlay.style.display = 'none'; 
             
-            // Магический трюк для Safari: запускаем и сразу ставим на паузу
             songAudio.play().then(() => { songAudio.pause(); }).catch(e => console.log(e));
             boomAudio.play().then(() => { boomAudio.pause(); }).catch(e => console.log(e));
             
             audioUnlocked = true;
         });
 
-        // 2. УПРАВЛЕНИЕ МУЗЫКОЙ ПРИ НАВЕДЕНИИ
         marker.addEventListener('markerFound', function() {
-            if (audioUnlocked && !exploded) {
+            if (audioUnlocked) {
+                // Включаем музыку, если она еще не играет
                 songSource.components.sound.playSound();
             }
         });
@@ -125,9 +134,7 @@
             }
         });
 
-        // 3. ТАП ПО ЭКРАНУ (ВЗРЫВ)
         window.addEventListener('touchstart', function(e) {
-            // Если тапнули по кнопке старта или звук еще заблокирован - игнорим
             if (!audioUnlocked || exploded || e.target.id === 'start-btn') return;
             
             const cube = document.getElementById('photo-cube');
@@ -136,17 +143,14 @@
             
             exploded = true;
             
-            // Выключаем музыку, включаем звук взрыва
-            if(songSource.components.sound) songSource.components.sound.stopSound();
+            // Музыку НЕ ВЫКЛЮЧАЕМ. Просто добавляем звук взрыва поверх
             if(boomSound && boomSound.components.sound) boomSound.components.sound.playSound();
 
-            // Анимация сжатия куба
             if(cube) {
                 cube.setAttribute('animation__explode', 'property: scale; to: 0 0 0; dur: 500; easing: easeInBack');
                 cube.setAttribute('animation__spin2', 'property: rotation; to: 0 1080 0; dur: 500; easing: easeInCubic');
             }
             
-            // Через полсекунды прячем куб и ПРУЖИНИСТО показываем текст
             setTimeout(() => {
                 if(cube) cube.setAttribute('visible', 'false');
                 if(message) message.emit('showText');
