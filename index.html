@@ -36,6 +36,10 @@
         .btn-full { grid-column: span 2; background: #ff4d6d !important; padding: 14px; font-size: 15px; }
         .btn-vibe { grid-column: span 2; background: #1db954 !important; padding: 14px; font-size: 15px; margin-top: 5px; border-bottom: 4px solid #14833b; color: white; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
         .btn-vibe:active { transform: translateY(2px); border-bottom-width: 2px; }
+        
+        .btn-player { grid-column: span 2; background: #00b4d8 !important; padding: 14px; font-size: 15px; margin-top: 5px; border-bottom: 4px solid #0077b6; color: white; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
+        .btn-player:active { transform: translateY(2px); border-bottom-width: 2px; }
+
         .btn-game { grid-column: span 2; background: #e52521 !important; padding: 14px; font-size: 15px; margin-top: 5px; border-bottom: 4px solid #b31b17;}
         button:active { transform: translateY(2px); border-bottom-width: 2px; }
         .btn-compass { grid-column: span 2; background: #6f42c1 !important; padding: 14px; font-size: 15px; margin-top: 5px; border-bottom: 4px solid #5a32a3; color: white; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
@@ -197,6 +201,7 @@
             <button onclick="sendMsg('Люблю тебя! ❤️')">Люблю ❤️</button>
             <button onclick="sendMsg('Позвони мне? 📞')">Звонок 📞</button>
             <button class="btn-full" onclick="sendKiss()">КИДАТЬ БУСЬКУ 💋</button> 
+            <button class="btn-player" id="main-player-btn" onclick="toggleMainPlayer()">🎶 Включить плеер</button>
             <button class="btn-vibe" onclick="tg.openLink('https://semavahid-art.github.io/vika-app/vibe.html')">🎵 Общий вайб</button>
             <button class="btn-game" onclick="tg.openLink('https://semavahid-art.github.io/vika-app/ar.html?v=55')" style="background: #ff9a9e !important; border-bottom-color: #ff758c; grid-column: span 2;">✨ Секретная AR-голограмма</button>
             <button class="btn-compass" onclick="sendLocation()">🧭 Обновить компас</button> 
@@ -212,8 +217,9 @@
             <div id="big-heart">❤️</div>
             <div class="pulse-hint">Зажми и держи</div>
         </div>
-        <audio id="lofi-audio" src="mot.mp3" loop crossorigin="anonymous"></audio>
     </div>
+
+    <audio id="lofi-audio" src="mot.mp3" loop crossorigin="anonymous"></audio>
 
     <div id="game-overlay">
         <button class="close-game" id="close-btn">X</button>
@@ -358,17 +364,18 @@
         function soundSmash() { playTone(150, 'square', 0.1); setTimeout(()=>playTone(100, 'sawtooth', 0.2), 50); }
         function soundWin()  { playTone(500, 'square', 0.2); setTimeout(()=>playTone(650, 'square', 0.2), 200); setTimeout(()=>playTone(800, 'square', 0.4), 400); }
 
-        /* ================= ПУЛЬС И АНТИСТРЕСС (LO-FI ЭФФЕКТ) ================= */
+        /* ================= ПЛЕЕР И LO-FI ЭФФЕКТ ================= */
         const pulseOverlay = document.getElementById('pulse-overlay');
         const heartContainer = document.getElementById('heart-container');
         const bigHeart = document.getElementById('big-heart');
         const lofiAudio = document.getElementById('lofi-audio');
+        const playerBtn = document.getElementById('main-player-btn');
         
         let pulseInterval;
         let lofiSetupDone = false;
         let fadeInterval;
+        let isPlaying = false;
 
-        // Создаем фильтр для звука "как за стеной"
         function setupLoFi() {
             if (lofiSetupDone) return;
             try {
@@ -376,13 +383,32 @@
                 const lowpass = audioCtx.createBiquadFilter();
                 
                 lowpass.type = 'lowpass';
-                lowpass.frequency.value = 350; // Срезаем высокие частоты
-                lowpass.Q.value = 1; // Немного гулкости (теплоты)
+                lowpass.frequency.value = 400; // Атмосфера мягкого Lo-Fi
+                lowpass.Q.value = 1;
 
                 source.connect(lowpass);
                 lowpass.connect(audioCtx.destination);
                 lofiSetupDone = true;
             } catch (e) { console.log("Фильтр не применился:", e); }
+        }
+
+        function toggleMainPlayer() {
+            try { if(audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){}
+            setupLoFi();
+
+            if (isPlaying) {
+                lofiAudio.pause();
+                playerBtn.innerText = "🎶 Включить плеер";
+                playerBtn.style.background = "#00b4d8";
+                isPlaying = false;
+            } else {
+                lofiAudio.volume = 1;
+                lofiAudio.play().then(() => {
+                    playerBtn.innerText = "⏸ Пауза";
+                    playerBtn.style.background = "#ff4d6d";
+                    isPlaying = true;
+                }).catch(e => console.log("Ошибка воспроизведения:", e));
+            }
         }
 
         function showPulseOverlay() {
@@ -399,14 +425,11 @@
             heartContainer.style.opacity = '1';
             
             try { if(audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){}
-            
-            // Навешиваем фильтр при первом клике
             setupLoFi();
 
-            // Плавное нарастание звука (Fade In)
             clearInterval(fadeInterval);
             lofiAudio.volume = 0;
-            lofiAudio.play().catch(e => console.log("Аудио заблокировано браузером", e));
+            lofiAudio.play().catch(e => console.log("Аудио заблокировано", e));
             
             fadeInterval = setInterval(() => {
                 if (lofiAudio.volume < 0.9) {
@@ -416,7 +439,6 @@
                 }
             }, 50);
 
-            // Вибрация и анимация сердца
             if (navigator.vibrate) {
                 navigator.vibrate([100, 100, 100]);
                 pulseInterval = setInterval(() => {
@@ -443,18 +465,19 @@
             heartContainer.style.opacity = '0.7';
             bigHeart.style.transform = 'scale(1)';
             
-            // Плавное затухание (Fade Out)
-            clearInterval(fadeInterval);
-            let vol = lofiAudio.volume;
-            fadeInterval = setInterval(() => {
-                if (vol > 0.05) {
-                    vol -= 0.05;
-                    lofiAudio.volume = Math.max(vol, 0);
-                } else {
-                    clearInterval(fadeInterval);
-                    lofiAudio.pause();
-                }
-            }, 50);
+            if (!isPlaying) {
+                clearInterval(fadeInterval);
+                let vol = lofiAudio.volume;
+                fadeInterval = setInterval(() => {
+                    if (vol > 0.05) {
+                        vol -= 0.05;
+                        lofiAudio.volume = Math.max(vol, 0);
+                    } else {
+                        clearInterval(fadeInterval);
+                        lofiAudio.pause();
+                    }
+                }, 50);
+            }
 
             clearInterval(pulseInterval);
             if (navigator.vibrate) navigator.vibrate(0);
