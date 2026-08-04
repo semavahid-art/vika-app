@@ -155,6 +155,7 @@
     const APP_URL = "https://semavahid-art.github.io/vika-app/";
 
 const myTracks = [
+const myTracks = [
   {
     title: "Shape of You",
     performer: "Ed Sheeran",
@@ -228,34 +229,44 @@ const myTracks = [
 ];
 
 let currentTrackIndex = -1;
-    function playRandomVibe() {
-      if (myTracks.length === 0) {
-        trackTitle.textContent = "Список треков пуст";
-        return;
-      }
 
-      let randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * myTracks.length);
-      } while (myTracks.length > 1 && randomIndex === currentTrackIndex);
+// 1. Переменная и функция для фоновой предзагрузки
+let nextAudio = new Audio();
 
-      currentTrackIndex = randomIndex;
-      const track = myTracks[randomIndex];
+function preloadNextTrack() {
+  if (myTracks.length <= 1) return;
+  const nextIndex = Math.floor(Math.random() * myTracks.length);
+  nextAudio.src = myTracks[nextIndex].src;
+}
 
-      const performer = track.performer ? `${track.performer} — ` : '';
-      trackTitle.textContent = `Сейчас играет: ${performer}${track.title}`;
-      
-      audioPlayer.src = track.src;
-      audioPlayer.load();
+// 2. Основная функция воспроизведения
+function playRandomVibe() {
+  if (myTracks.length === 0) {
+    if (trackTitle) trackTitle.textContent = "Список треков пуст";
+    return;
+  }
 
-      const playPromise = audioPlayer.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          console.error("Ошибка воспроизведения:", error);
-          trackTitle.textContent = "Нажми ▶ на плеере";
-        });
-      }
-    }
+  let randomIndex;
+  do {
+    randomIndex = Math.floor(Math.random() * myTracks.length);
+  } while (myTracks.length > 1 && randomIndex === currentTrackIndex);
+
+  currentTrackIndex = randomIndex;
+  const track = myTracks[randomIndex];
+
+  audioPlayer.src = track.src;
+  if (trackTitle) trackTitle.textContent = track.title;
+  if (trackPerformer) trackPerformer.textContent = track.performer;
+
+  audioPlayer.play()
+    .then(() => {
+      preloadNextTrack();
+    })
+    .catch(err => {
+      console.log("Ошибка воспроизведения (автовоспроизведение заблокировано браузером):", err);
+      if (trackTitle) trackTitle.textContent = "Нажми ▶ на плеере";
+    });
+}
 
     function openApp() {
       if (tg && tg.openLink) {
