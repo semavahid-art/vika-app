@@ -25,7 +25,6 @@
       color: #fff;
     }
 
-    /* Анимированный размытый фон */
     .bg-blur {
       position: absolute;
       width: 340px;
@@ -42,7 +41,6 @@
       100% { transform: translate(20px, 20px) scale(1.1); }
     }
 
-    /* Карточка плеера */
     .player-card {
       position: relative;
       z-index: 2;
@@ -117,10 +115,6 @@
       transform: scale(0.97);
     }
 
-    .vibe-btn:disabled {
-      opacity: 0.6;
-    }
-
     .app-link-btn {
       background: rgba(255, 255, 255, 0.15);
       color: #fff;
@@ -158,42 +152,34 @@
     const trackTitle = document.getElementById('track-title');
     const audioPlayer = document.getElementById('audio-player');
 
-    // Ссылка на главное приложение
     const APP_URL = "https://semavahid-art.github.io/vika-app/";
 
-    // ==========================================
-    // 🎵 СПИСОК ТВОИХ ТРЕКОВ
-    // Сюда добавляй новые треки в таком же формате:
-    // ==========================================
-   const myTracks = [
-  { 
-    title: "Perfect", 
-    performer: "Ed Sheeran", 
-    src: "music/ed_sheeran_shape_of_you.mp3" 
-  },
-  { 
-    title: "Случайности не случайны", 
-    performer: "Мот", 
-    src: "music/mot_sluchajnosti.mp3"
-  },
-  { 
-    title: "SoundHelix Тест", 
-    performer: "Demo", 
-    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" 
-  }
-];
+    const myTracks = [
+      { 
+        title: "Shape of You", 
+        performer: "Ed Sheeran", 
+        src: "music/ed_sheeran_shape_of_you.mp3" 
+      },
+      { 
+        title: "Случайности не случайны", 
+        performer: "Мот", 
+        src: "music/mot_sluchajnosti.mp3" 
+      },
+      { 
+        title: "SoundHelix Тест", 
+        performer: "Demo", 
+        src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" 
+      }
+    ];
+
     let currentTrackIndex = -1;
 
     function playRandomVibe() {
-      // 1. «Размораживаем» звук на мобилке прямо по тапу
-      audioPlayer.play().catch(() => {});
-
       if (myTracks.length === 0) {
         trackTitle.textContent = "Список треков пуст";
         return;
       }
 
-      // 2. Выбираем случайно, но чтобы не повторялся один и тот же два раза подряд
       let randomIndex;
       do {
         randomIndex = Math.floor(Math.random() * myTracks.length);
@@ -202,7 +188,6 @@
       currentTrackIndex = randomIndex;
       const track = myTracks[randomIndex];
 
-      // 3. Обновляем интерфейс и запускаем трек
       const performer = track.performer ? `${track.performer} — ` : '';
       trackTitle.textContent = `Сейчас играет: ${performer}${track.title}`;
       
