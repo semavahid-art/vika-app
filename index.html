@@ -219,7 +219,8 @@
         </div>
     </div>
 
-    <audio id="lofi-audio" src="mot.mp3" loop crossorigin="anonymous"></audio>
+    <!-- АУДИО ТЕК С ВАЖНЫМИ АТРИБУТАМИ -->
+    <audio id="lofi-audio" src="mot.mp3" loop playsinline preload="auto"></audio>
 
     <div id="game-overlay">
         <button class="close-game" id="close-btn">X</button>
@@ -346,10 +347,19 @@
         setInterval(updateTimer, 1000); updateTimer();
 
         /* ================= ЗВУКИ И ИГРА ================= */
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let audioCtx = null;
+        function initAudioCtx() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
         function playTone(freq, type, duration) {
             try {
-                if(audioCtx.state === 'suspended') audioCtx.resume();
+                initAudioCtx();
                 const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
                 osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
                 osc.connect(gain); gain.connect(audioCtx.destination);
@@ -379,22 +389,23 @@
         function setupLoFi() {
             if (lofiSetupDone) return;
             try {
+                initAudioCtx();
                 const source = audioCtx.createMediaElementSource(lofiAudio);
                 const lowpass = audioCtx.createBiquadFilter();
                 
                 lowpass.type = 'lowpass';
-                lowpass.frequency.value = 400; // Атмосфера мягкого Lo-Fi
+                lowpass.frequency.value = 500; // Атмосфера мягкого Lo-Fi
                 lowpass.Q.value = 1;
 
                 source.connect(lowpass);
                 lowpass.connect(audioCtx.destination);
                 lofiSetupDone = true;
-            } catch (e) { console.log("Фильтр не применился:", e); }
+            } catch (e) { console.log("Фильтр не применился или уже подключен:", e); }
         }
 
+        // ПОНОСТЬЮ ПЕРЕРАБОТАННАЯ И СТАБИЛЬНАЯ ФУНКЦИЯ ВКЛЮЧЕНИЯ ПЛЕЕРА
         function toggleMainPlayer() {
-            try { if(audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){}
-            setupLoFi();
+            initAudioCtx();
 
             if (isPlaying) {
                 lofiAudio.pause();
@@ -403,11 +414,21 @@
                 isPlaying = false;
             } else {
                 lofiAudio.volume = 1;
-                lofiAudio.play().then(() => {
-                    playerBtn.innerText = "⏸ Пауза";
-                    playerBtn.style.background = "#ff4d6d";
-                    isPlaying = true;
-                }).catch(e => console.log("Ошибка воспроизведения:", e));
+                
+                // ВАЖНО: Вызов play происходит сразу в момент нажатия
+                const promise = lofiAudio.play();
+                
+                if (promise !== undefined) {
+                    promise.then(() => {
+                        setupLoFi();
+                        playerBtn.innerText = "⏸ Пауза";
+                        playerBtn.style.background = "#ff4d6d";
+                        isPlaying = true;
+                    }).catch(err => {
+                        console.log("Ошибка воспроизведения:", err);
+                        playerBtn.innerText = "⚠️ Нажми еще раз";
+                    });
+                }
             }
         }
 
@@ -424,12 +445,17 @@
             if (e) e.preventDefault();
             heartContainer.style.opacity = '1';
             
-            try { if(audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){}
-            setupLoFi();
+            initAudioCtx();
 
             clearInterval(fadeInterval);
             lofiAudio.volume = 0;
-            lofiAudio.play().catch(e => console.log("Аудио заблокировано", e));
+            
+            const promise = lofiAudio.play();
+            if (promise !== undefined) {
+                promise.then(() => {
+                    setupLoFi();
+                }).catch(e => console.log("Аудио заблокировано", e));
+            }
             
             fadeInterval = setInterval(() => {
                 if (lofiAudio.volume < 0.9) {
@@ -526,7 +552,7 @@
 
         function startGame() {
             try { tg.requestFullscreen(); } catch(e) {}
-            try { if(audioCtx.state === 'suspended') audioCtx.resume(); } catch(e) {}
+            initAudioCtx();
             applyDayNightTheme(); 
 
             overlay.style.display = 'flex';
@@ -552,7 +578,7 @@
         function handleTap(e) {
             if (e.target.id === 'close-btn' || e.target.closest('#finale-modal') || e.target.closest('#pulse-overlay')) return;
             e.preventDefault(); 
-            try { if(audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){}
+            initAudioCtx();
             instruction.style.opacity = '0'; 
 
             if (!gameActive || isFinishing) return;
