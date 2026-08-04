@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Генератор Вайба</title>
+</head>
+
+<body>
+
+    <!-- Название трека -->
+    <h2 id="track-title">Нажми кнопку, чтобы поймать вайб</h2>
+
+    <!-- Аудиоплеер -->
+    <audio id="audio-player" controls></audio>
+
+    <br><br>
+
+    <!-- Кнопка запуска -->
+    <button id="vibe-btn">Общий вайб</button>
+
+    <!-- Весь скрипт внутри тега script -->
+    <script>
+        const vibeBtn = document.getElementById('vibe-btn');
+        const trackTitle = document.getElementById('track-title');
+        const audioPlayer = document.getElementById('audio-player');
+
+        const tracks = [
+            { title: "Летний вайб", src: "music/track1.mp3" },
+            { title: "Ночной чилл", src: "music/track2.mp3" },
+            { title: "Энергичный драйв", src: "music/track3.mp3" },
+            { title: "Лоу-фай вечер", src: "music/track4.mp3" }
+        ];
+
+        let lastIndex = -1;
+
+        function playRandomVibe() {
+            let randomIndex;
+
+            if (tracks.length > 1) {
+                do {
+                    randomIndex = Math.floor(Math.random() * tracks.length);
+                } while (randomIndex === lastIndex);
+            } else {
+                randomIndex = 0;
+            }
+
+            lastIndex = randomIndex;
+            const currentTrack = tracks[randomIndex];
+
+            trackTitle.textContent = `Сейчас играет: ${currentTrack.title}`;
+            audioPlayer.src = currentTrack.src;
+            audioPlayer.play();
+        }
+
+        vibeBtn.addEventListener('click', playRandomVibe);
+    </script>
+</body>
+
+</html>
