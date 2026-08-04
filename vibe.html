@@ -3,54 +3,46 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Генератор Вайба</title>
 </head>
 
 <body>
 
-    <!-- Название трека -->
     <h2 id="track-title">Нажми кнопку, чтобы поймать вайб</h2>
 
-    <!-- Аудиоплеер -->
     <audio id="audio-player" controls></audio>
 
     <br><br>
 
-    <!-- Кнопка запуска -->
     <button id="vibe-btn">Общий вайб</button>
 
-    <!-- Весь скрипт внутри тега script -->
     <script>
         const vibeBtn = document.getElementById('vibe-btn');
         const trackTitle = document.getElementById('track-title');
         const audioPlayer = document.getElementById('audio-player');
 
-        const tracks = [
-            { title: "Летний вайб", src: "music/track1.mp3" },
-            { title: "Ночной чилл", src: "music/track2.mp3" },
-            { title: "Энергичный драйв", src: "music/track3.mp3" },
-            { title: "Лоу-фай вечер", src: "music/track4.mp3" }
-        ];
+        // Укажи здесь адрес твоего бэкенда/сервера (где крутится MySQL/API бота)
+        const API_URL = "https://твой-домен-или-ip.com/api/random-track";
 
-        let lastIndex = -1;
+        async function playRandomVibe() {
+            try {
+                trackTitle.textContent = "Ищем трек...";
+                
+                // Запрашиваем случайный трек из базы MySQL через бэкенд
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error("Ошибка сервера");
+                
+                const track = await response.json();
 
-        function playRandomVibe() {
-            let randomIndex;
+                trackTitle.textContent = `Сейчас играет: ${track.performer || ''} - ${track.title}`;
+                audioPlayer.src = track.src; // Прямая ссылка на mp3 или прокси бота
+                audioPlayer.play();
 
-            if (tracks.length > 1) {
-                do {
-                    randomIndex = Math.floor(Math.random() * tracks.length);
-                } while (randomIndex === lastIndex);
-            } else {
-                randomIndex = 0;
+            } catch (error) {
+                console.error("Ошибка:", error);
+                trackTitle.textContent = "Не удалось загрузить трек из базы";
             }
-
-            lastIndex = randomIndex;
-            const currentTrack = tracks[randomIndex];
-
-            trackTitle.textContent = `Сейчас играет: ${currentTrack.title}`;
-            audioPlayer.src = currentTrack.src;
-            audioPlayer.play();
         }
 
         vibeBtn.addEventListener('click', playRandomVibe);
