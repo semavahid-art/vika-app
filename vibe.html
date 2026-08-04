@@ -154,26 +154,77 @@
 
     const APP_URL = "https://semavahid-art.github.io/vika-app/";
 
-    // Функция кодирования спецсимволов и кириллицы для jsDelivr
-    function getCdnUrl(filename) {
-      return `https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/${encodeURIComponent(filename)}`;
-    }
-
     const myTracks = [
-      { title: "Shape of You", performer: "Ed Sheeran", src: getCdnUrl("01 Ed Sheeran - Shape of You.mp3") },
-      { title: "Дорога", performer: "L'One", src: getCdnUrl("02 L One - Дорога.mp3") },
-      { title: "Every Breath You Take", performer: "The Police", src: getCdnUrl("04 The Police - Every Breath You Take.mp3") },
-      { title: "Perfect", performer: "Ed Sheeran", src: getCdnUrl("05 Ed Sheeran - Perfect.mp3") },
-      { title: "Skyfall", performer: "Adele", src: getCdnUrl("Adele - Skyfall.mp3") },
-      { title: "Кавалерия", performer: "By Индия", src: getCdnUrl("By Индия - кавалерия.mp3") },
-      { title: "Люби меня так", performer: "By Индия", src: getCdnUrl("By Индия - люби меня так.mp3") },
-      { title: "You", performer: "Nina Nikolina", src: getCdnUrl("Nicolina_-_You_(mp3.pm).mp3") },
-      { title: "Кухни", performer: "Бонд с кнопкой", src: getCdnUrl("Бонд с кнопкой - Кухни.mp3") },
-      { title: "Яркий Я", performer: "Дискотека Авария", src: getCdnUrl("Дискотека Авария - Яркий Я.mp3") },
-      { title: "Где прошла ты", performer: "Кравц", src: getCdnUrl("Кравц - Где прошла ты.mp3") },
-      { title: "Случайности не случайны", performer: "Мот", src: getCdnUrl("Мот - Случайности не случайны.mp3") },
-      { title: "Минута", performer: "Рубеж Веков", src: getCdnUrl("Рубеж Веков - Минута.mp3") },
-      { title: "10", performer: "Эндшпиль", src: getCdnUrl("Эндшпиль - 10.mp3") }
+      {
+        title: "Shape of You",
+        performer: "Ed Sheeran",
+        src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("01 Ed Sheeran - Shape of You.mp3")
+      },
+      {
+        title: "Дорога",
+        performer: "L'One",
+        src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("02 L One - Дорога.mp3")
+      },
+      {
+        title: "Every Breath You Take",
+        performer: "The Police",
+        src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("04 The Police - Every Breath You Take.mp3")
+      },
+      {
+        title: "Perfect",
+        performer: "Ed Sheeran",
+        src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("05 Ed Sheeran - Perfect.mp3")
+      },
+      {
+        title: "Skyfall",
+        performer: "Adele",
+        src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Adele - Skyfall.mp3")
+      },
+      {
+        title: "Кавалерия",
+        performer: "By Индия",
+        src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("By Индия - кавалерия.mp3")
+      },
+      {
+        title: "Люби меня так",
+        performer: "By Индия",
+        src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("By Индия - люби меня так.mp3")
+      },
+      {
+        title: "You",
+        performer: "Nina Nikolina",
+        src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Nicolina_-_You_(mp3.pm).mp3")
+      },
+      {
+        title: "Кухни",
+        performer: "Бонд с кнопкой",
+        src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Бонд с кнопкой - Кухни.mp3")
+      },
+      {
+        title: "Яркий Я",
+        performer: "Дискотека Авария",
+        src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Дискотека Авария - Яркий Я.mp3")
+      },
+      {
+        title: "Где прошла ты",
+        performer: "Кравц",
+        src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Кравц - Где прошла ты.mp3")
+      },
+      {
+        title: "Случайности не случайны",
+        performer: "Мот",
+        src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Мот - Случайности не случайны.mp3")
+      },
+      {
+        title: "Минута",
+        performer: "Рубеж Веков",
+        src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Рубеж Веков - Минута.mp3")
+      },
+      {
+        title: "10",
+        performer: "Эндшпиль",
+        src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Эндшпиль - 10.mp3")
+      }
     ];
 
     let currentTrackIndex = -1;
