@@ -2,51 +2,224 @@
 <html lang="ru">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Генератор Вайба</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Генератор Вайба</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f172a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    /* Анимированный размытый фон */
+    .bg-blur {
+      position: absolute;
+      width: 380px;
+      height: 380px;
+      background: linear-gradient(135deg, #ff4d6d 0%, #a855f7 50%, #6366f1 100%);
+      filter: blur(90px);
+      border-radius: 50%;
+      z-index: 1;
+      animation: float 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes float {
+      0% { transform: translate(-30px, -30px) scale(1); }
+      100% { transform: translate(30px, 30px) scale(1.15); }
+    }
+
+    /* Карточка плеера */
+    .player-card {
+      position: relative;
+      z-index: 2;
+      width: 90%;
+      max-width: 380px;
+      padding: 30px 24px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+
+    .cover-art {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 20px;
+      background: linear-gradient(135deg, #ff758c, #ff7eb3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 45px;
+      box-shadow: 0 10px 25px rgba(255, 77, 109, 0.4);
+      animation: pulseCover 2s infinite alternate;
+    }
+
+    @keyframes pulseCover {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.05); }
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      line-height: 1.4;
+      min-height: 2.8em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f8fafc;
+    }
+
+    audio {
+      width: 100%;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      outline: none;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .vibe-btn {
+      color: #0f172a;
+      background: #ffffff;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.25);
+    }
+
+    .vibe-btn:active {
+      transform: scale(0.98);
+    }
+
+    .vibe-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .app-link-btn {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .app-link-btn:active {
+      background: rgba(255, 255, 255, 0.25);
+    }
+  </style>
 </head>
 
 <body>
 
+  <div class="bg-blur"></div>
+
+  <div class="player-card">
+    <div class="cover-art">🎵</div>
     <h2 id="track-title">Нажми кнопку, чтобы поймать вайб</h2>
 
-    <audio id="audio-player" controls></audio>
+    <audio id="audio-player" controls preload="metadata"></audio>
 
-    <br><br>
+    <div class="btn-group">
+      <button id="vibe-btn" class="vibe-btn">🎲 Включить случайный вайб</button>
+      <button id="app-btn" class="app-link-btn">📱 Открыть приложение</button>
+    </div>
+  </div>
 
-    <button id="vibe-btn">Общий вайб</button>
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) { tg.ready(); tg.expand(); }
 
-    <script>
-        const vibeBtn = document.getElementById('vibe-btn');
-        const trackTitle = document.getElementById('track-title');
-        const audioPlayer = document.getElementById('audio-player');
+    const vibeBtn = document.getElementById('vibe-btn');
+    const appBtn = document.getElementById('app-btn');
+    const trackTitle = document.getElementById('track-title');
+    const audioPlayer = document.getElementById('audio-player');
 
-        // Укажи здесь адрес твоего бэкенда/сервера (где крутится MySQL/API бота)
-        const API_URL = "https://твой-домен-или-ip.com/api/random-track";
+    // Прямой путь к приложению на GitHub Pages
+    const APP_URL = "https://semavahid-art.github.io/vika-app/";
+    
+    // Замени эту ссылку на рабочий URL своего API, когда бэкенд будет готов
+    const API_URL = "https://semavahid-art.github.io/vika-app/api/random-track.json";
 
-        async function playRandomVibe() {
-            try {
-                trackTitle.textContent = "Ищем трек...";
-                
-                // Запрашиваем случайный трек из базы MySQL через бэкенд
-                const response = await fetch(API_URL);
-                if (!response.ok) throw new Error("Ошибка сервера");
-                
-                const track = await response.json();
+    // Запасной локальный список треков на случай ошибки сервера/сети
+    const fallbackTracks = [
+      { title: "Мот — Случайности не случайны", src: "mot.mp3" },
+      { title: "Ло-фай Вайб для двоих", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" }
+    ];
 
-                trackTitle.textContent = `Сейчас играет: ${track.performer || ''} - ${track.title}`;
-                audioPlayer.src = track.src; // Прямая ссылка на mp3 или прокси бота
-                audioPlayer.play();
+    async function playRandomVibe() {
+      try {
+        vibeBtn.disabled = true;
+        trackTitle.textContent = "Ищем трек...";
 
-            } catch (error) {
-                console.error("Ошибка:", error);
-                trackTitle.textContent = "Не удалось загрузить трек из базы";
-            }
+        let track;
+
+        try {
+          const response = await fetch(API_URL);
+          if (!response.ok) throw new Error("Сервер недоступен");
+          track = await response.json();
+        } catch (e) {
+          // Если бэкенд не ответил, берём трек из локального резерва
+          track = fallbackTracks[Math.floor(Math.random() * fallbackTracks.length)];
         }
 
-        vibeBtn.addEventListener('click', playRandomVibe);
-    </script>
+        const performer = track.performer ? `${track.performer} — ` : '';
+        trackTitle.textContent = `Сейчас играет: ${performer}${track.title}`;
+        
+        audioPlayer.src = track.src;
+
+        // Запуск через Promise гарантия работы после клика
+        await audioPlayer.play();
+
+      } catch (error) {
+        console.error("Ошибка воспроизведения:", error);
+        trackTitle.textContent = "Не удалось включить трек 🥺";
+      } finally {
+        vibeBtn.disabled = false;
+      }
+    }
+
+    function openApp() {
+      if (tg && tg.openLink) {
+        tg.openLink(APP_URL);
+      } else {
+        window.location.href = APP_URL;
+      }
+    }
+
+    vibeBtn.addEventListener('click', playRandomVibe);
+    appBtn.addEventListener('click', openApp);
+  </script>
 </body>
 
 </html>
