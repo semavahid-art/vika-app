@@ -154,9 +154,9 @@
 
     const APP_URL = "https://semavahid-art.github.io/vika-app/";
 
-    // Функция для безопасного формирования быстрых ссылок CDN
+    // Функция кодирования спецсимволов и кириллицы для jsDelivr
     function getCdnUrl(filename) {
-      return `https://cdn.statically.io/gh/semavahid-art/vika-app/main/music/${encodeURIComponent(filename)}`;
+      return `https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/${encodeURIComponent(filename)}`;
     }
 
     const myTracks = [
@@ -195,9 +195,8 @@
       audioPlayer.src = track.src;
       if (trackTitle) trackTitle.textContent = `${track.performer} — ${track.title}`;
 
-      // Сбрасываем и заново загружаем плеер для мгновенного старта
       audioPlayer.load();
-      
+
       const playPromise = audioPlayer.play();
       if (playPromise !== undefined) {
         playPromise.catch(err => {
