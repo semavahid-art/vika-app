@@ -154,7 +154,7 @@
 
     const APP_URL = "https://semavahid-art.github.io/vika-app/";
 
-  const myTracks = [
+const myTracks = [
   {
     title: "Shape of You",
     performer: "Ed Sheeran",
@@ -192,7 +192,7 @@
   },
   {
     title: "You",
-    performer: "Nicolina",
+    performer: "Nina Nikolina",
     src: encodeURI("https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/Nicolina_-_You_(mp3.pm).mp3")
   },
   {
@@ -226,8 +226,8 @@
     src: encodeURI("https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/Эндшпиль - 10.mp3")
   }
 ];
-    let currentTrackIndex = -1;
 
+let currentTrackIndex = -1;
     function playRandomVibe() {
       if (myTracks.length === 0) {
         trackTitle.textContent = "Список треков пуст";
