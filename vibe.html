@@ -34,6 +34,7 @@
       border-radius: 50%;
       z-index: 1;
       animation: float 7s ease-in-out infinite alternate;
+      transition: background 1s ease;
     }
 
     @keyframes float {
@@ -56,10 +57,16 @@
       text-align: center;
     }
 
-    .cover-art {
+    .cover-wrapper {
+      position: relative;
       width: 80px;
       height: 80px;
       margin: 0 auto 16px;
+    }
+
+    .cover-art {
+      width: 100%;
+      height: 100%;
       background: linear-gradient(135deg, #ff758c, #ff7eb3);
       border-radius: 50%;
       display: flex;
@@ -80,6 +87,40 @@
       100% { transform: scale(1); box-shadow: 0 8px 20px rgba(255, 77, 109, 0.4); }
     }
 
+    /* Эквалайзер */
+    .eq-bar-container {
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 3px;
+      height: 16px;
+      align-items: flex-end;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .eq-bar-container.active {
+      opacity: 1;
+    }
+
+    .eq-bar {
+      width: 4px;
+      background: #00f2fe;
+      border-radius: 2px;
+      animation: bounce 0.6s ease-in-out infinite alternate;
+    }
+
+    .eq-bar:nth-child(1) { height: 60%; animation-delay: 0.1s; }
+    .eq-bar:nth-child(2) { height: 100%; animation-delay: 0.3s; }
+    .eq-bar:nth-child(3) { height: 40%; animation-delay: 0.2s; }
+
+    @keyframes bounce {
+      0% { height: 20%; }
+      100% { height: 100%; }
+    }
+
     h2 {
       font-size: 1.1rem;
       font-weight: 600;
@@ -94,27 +135,32 @@
 
     audio {
       width: 100%;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       border-radius: 12px;
       outline: none;
     }
 
     .nav-controls {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       margin-bottom: 12px;
     }
 
     .nav-btn {
       flex: 1;
-      padding: 12px;
-      font-size: 1.1rem;
+      padding: 10px;
+      font-size: 0.95rem;
       background: rgba(255, 255, 255, 0.15);
       color: #fff;
       border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 14px;
       cursor: pointer;
       transition: transform 0.1s ease, background 0.2s ease;
+    }
+
+    .nav-btn.active-mode {
+      background: rgba(255, 255, 255, 0.35);
+      border-color: #fff;
     }
 
     .nav-btn:disabled {
@@ -163,27 +209,100 @@
     .app-link-btn:active {
       background: rgba(255, 255, 255, 0.25);
     }
+
+    /* Модалка с текстом */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 24px;
+      width: 85%;
+      max-width: 320px;
+      max-height: 60vh;
+      overflow-y: auto;
+      text-align: center;
+    }
+
+    .modal-content h3 {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+    }
+
+    .modal-content p {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      white-space: pre-line;
+      color: #cbd5e1;
+    }
+
+    .close-modal-btn {
+      margin-top: 16px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
   </style>
 </head>
 
 <body>
 
-  <div class="bg-blur"></div>
+  <div id="bg-blur" class="bg-blur"></div>
 
   <div class="player-card">
-    <div id="cover-art" class="cover-art">🎵</div>
+    <div class="cover-wrapper">
+      <div id="cover-art" class="cover-art">🎵</div>
+      <div id="eq-bar" class="eq-bar-container">
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+      </div>
+    </div>
+
     <h2 id="track-title">Нажми кнопку, чтобы поймать вайб</h2>
 
     <audio id="audio-player" controls playsinline preload="metadata"></audio>
 
     <div class="nav-controls">
-      <button id="prev-btn" class="nav-btn" title="Предыдущий трек" disabled>⏮️ Назад</button>
-      <button id="next-btn" class="nav-btn" title="Следующий трек">Вперёд ⏭️</button>
+      <button id="prev-btn" class="nav-btn" title="Предыдущий трек" disabled>⏮️</button>
+      <button id="repeat-btn" class="nav-btn" title="Режим повтора">➡️</button>
+      <button id="lyrics-btn" class="nav-btn" title="Текст песни">📜 Текст</button>
+      <button id="next-btn" class="nav-btn" title="Следующий трек">⏭️</button>
     </div>
 
     <div class="btn-group">
       <button id="vibe-btn" class="vibe-btn">🎲 Включить случайный вайб</button>
       <button id="app-btn" class="app-link-btn">📱 Открыть приложение</button>
+    </div>
+  </div>
+
+  <!-- Окно текста -->
+  <div id="lyrics-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 id="lyrics-title">Текст песни</h3>
+      <p id="lyrics-text">Загрузка...</p>
+      <button id="close-lyrics-btn" class="close-modal-btn">Закрыть</button>
     </div>
   </div>
 
@@ -201,52 +320,77 @@
     const appBtn = document.getElementById('app-btn');
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
+    const repeatBtn = document.getElementById('repeat-btn');
+    const lyricsBtn = document.getElementById('lyrics-btn');
     const trackTitle = document.getElementById('track-title');
     const audioPlayer = document.getElementById('audio-player');
     const coverArt = document.getElementById('cover-art');
+    const eqBar = document.getElementById('eq-bar');
+    const bgBlur = document.getElementById('bg-blur');
+
+    const lyricsModal = document.getElementById('lyrics-modal');
+    const lyricsTitle = document.getElementById('lyrics-title');
+    const lyricsText = document.getElementById('lyrics-text');
+    const closeLyricsBtn = document.getElementById('close-lyrics-btn');
 
     const APP_URL = "https://semavahid-art.github.io/vika-app/";
 
     const myTracks = [
-      { title: "Shape of You", performer: "Ed Sheeran", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("01 Ed Sheeran - Shape of You.mp3") },
-      { title: "Дорога", performer: "L'One", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("02 L One - Дорога.mp3") },
-      { title: "Every Breath You Take", performer: "The Police", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("04 The Police - Every Breath You Take.mp3") },
-      { title: "Perfect", performer: "Ed Sheeran", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("05 Ed Sheeran - Perfect.mp3") },
-      { title: "Skyfall", performer: "Adele", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Adele - Skyfall.mp3") },
-      { title: "Кавалерия", performer: "By Индия", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("By Индия - кавалерия.mp3") },
-      { title: "Люби меня так", performer: "By Индия", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("By Индия - люби меня так.mp3") },
-      { title: "You", performer: "Nina Nikolina", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Nicolina_-_You_(mp3.pm).mp3") },
-      { title: "Кухни", performer: "Бонд с кнопкой", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Бонд с кнопкой - Кухни.mp3") },
-      { title: "Яркий Я", performer: "Дискотека Авария", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Дискотека Авария - Яркий Я.mp3") },
-      { title: "Где прошла ты", performer: "Кравц", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Кравц - Где прошла ты.mp3") },
-      { title: "Случайности не случайны", performer: "Мот", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Мот - Случайности не случайны.mp3") },
-      { title: "Минута", performer: "Рубеж Веков", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Рубеж Веков - Минута.mp3") },
-      { title: "Не надо быть сильной", performer: "Миша Марвин", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Миша_Марвин_Не_надо_быть_сильной.mp3") },
-      { title: "10", performer: "Эндшпиль", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Эндшпиль - 10.mp3") }
+      { title: "Shape of You", performer: "Ed Sheeran", bg: "linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)", lyrics: "The club isn't the best place to find a lover\nSo the bar is where I go...", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("01 Ed Sheeran - Shape of You.mp3") },
+      { title: "Дорога", performer: "L'One", bg: "linear-gradient(135deg, #f7971e 0%, #ffd200 100%)", lyrics: "Эта дорога ведет меня к цели...\nНи шаг назад, только вперед.", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("02 L One - Дорога.mp3") },
+      { title: "Every Breath You Take", performer: "The Police", bg: "linear-gradient(135deg, #2b5876 0%, #4e4376 100%)", lyrics: "Every breath you take\nAnd every move you make...", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("04 The Police - Every Breath You Take.mp3") },
+      { title: "Perfect", performer: "Ed Sheeran", bg: "linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)", lyrics: "I found a love for me\nDarling, just dive right in...", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("05 Ed Sheeran - Perfect.mp3") },
+      { title: "Skyfall", performer: "Adele", bg: "linear-gradient(135deg, #141e30 0%, #243b55 100%)", lyrics: "Let the sky fall, when it crumbles\nWe will stand tall...", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Adele - Skyfall.mp3") },
+      { title: "Кавалерия", performer: "By Индия", bg: "linear-gradient(135deg, #8a2387 0%, #e94057 50%, #f27121 100%)", lyrics: "Тихо капают слезы на капот...\nКавалерия идет.", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("By Индия - кавалерия.mp3") },
+      { title: "Люби меня так", performer: "By Индия", bg: "linear-gradient(135deg, #da22ff 0%, #9733ee 100%)", lyrics: "Люби меня так, будто затвра не будет...\nТолько ты и этот вечер.", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("By Индия - люби меня так.mp3") },
+      { title: "You", performer: "Nina Nikolina", bg: "linear-gradient(135deg, #654ea3 0%, #eaafc8 100%)", lyrics: "All I ever wanted was you...", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Nicolina_-_You_(mp3.pm).mp3") },
+      { title: "Кухни", performer: "Бонд с кнопкой", bg: "linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%)", lyrics: "Наши кухни помнят все разговоры...", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Бонд с кнопкой - Кухни.mp3") },
+      { title: "Яркий Я", performer: "Дискотека Авария", bg: "linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%)", lyrics: "Яркий я, зажигаю снова ночи!", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Дискотека Авария - Яркий Я.mp3") },
+      { title: "Где прошла ты", performer: "Кравц", bg: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)", lyrics: "Там где прошла ты, цветут цветы...", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Кравц - Где прошла ты.mp3") },
+      { title: "Случайности не случайны", performer: "Мот", bg: "linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%)", lyrics: "Всё продумано до мелочей...\nСлучайности не случайны.", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Мот - Случайности не случайны.mp3") },
+      { title: "Минута", performer: "Рубеж Веков", bg: "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)", lyrics: "Дай мне хотя бы минуту...", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Рубеж Веков - Минута.mp3") },
+      { title: "Не надо быть сильной", performer: "Миша Марвин", bg: "linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%)", lyrics: "Не надо быть сильной рядом со мной...", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Миша_Марвин_Не_надо_быть_сильной.mp3") },
+      { title: "10", performer: "Эндшпиль", bg: "linear-gradient(135deg, #3a1c71 0%, #d76d77 50%, #ffaf7b 100%)", lyrics: "Выкручиваем звук на 10...", src: "https://cdn.jsdelivr.net/gh/semavahid-art/vika-app@main/music/" + encodeURIComponent("Эндшпиль - 10.mp3") }
     ];
 
     let historyStack = [];
     let historyIndex = -1;
+    let repeatMode = 0; // 0: Off (Random next), 1: Repeat One, 2: Off (Stop)
 
     function updateNavButtons() {
       prevBtn.disabled = historyIndex <= 0;
     }
 
-    function loadAndPlayTrack(trackIndex) {
+    function applyBgGradient(gradientStr) {
+      if (gradientStr) {
+        bgBlur.style.background = gradientStr;
+      }
+    }
+
+    function loadAndPlayTrack(trackIndex, autoPlay = true, seekTime = 0) {
       const track = myTracks[trackIndex];
       audioPlayer.src = track.src;
       if (trackTitle) trackTitle.textContent = `${track.performer} — ${track.title}`;
+      
+      applyBgGradient(track.bg);
 
       audioPlayer.load();
 
-      const playPromise = audioPlayer.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(err => {
-          console.log("Ошибка воспроизведения:", err);
-          if (trackTitle) trackTitle.textContent = `${track.performer} — ${track.title} (Нажми ▶)`;
-        });
+      if (seekTime > 0) {
+        audioPlayer.currentTime = seekTime;
       }
 
+      if (autoPlay) {
+        const playPromise = audioPlayer.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(err => {
+            console.log("Ошибка воспроизведения:", err);
+            if (trackTitle) trackTitle.textContent = `${track.performer} — ${track.title} (Нажми ▶)`;
+          });
+        }
+      }
+
+      saveState();
       updateNavButtons();
     }
 
@@ -281,12 +425,47 @@
 
     function playNextTrack() {
       triggerHaptic();
+      if (repeatMode === 1 && historyIndex >= 0) {
+        loadAndPlayTrack(historyStack[historyIndex]);
+        return;
+      }
+
       if (historyIndex < historyStack.length - 1) {
         historyIndex++;
         loadAndPlayTrack(historyStack[historyIndex]);
       } else {
         playRandomVibe();
       }
+    }
+
+    function toggleRepeatMode() {
+      triggerHaptic();
+      repeatMode = (repeatMode + 1) % 2;
+      if (repeatMode === 1) {
+        repeatBtn.textContent = "🔂";
+        repeatBtn.classList.add('active-mode');
+      } else {
+        repeatBtn.textContent = "➡️";
+        repeatBtn.classList.remove('active-mode');
+      }
+    }
+
+    function showLyrics() {
+      triggerHaptic();
+      if (historyIndex < 0 || !historyStack[historyIndex]) {
+        lyricsTitle.textContent = "Текст песни";
+        lyricsText.textContent = "Сначала включи трек!";
+      } else {
+        const track = myTracks[historyStack[historyIndex]];
+        lyricsTitle.textContent = `${track.performer} — ${track.title}`;
+        lyricsText.textContent = track.lyrics || "Текст пока не добавлен.";
+      }
+      lyricsModal.classList.add('open');
+    }
+
+    function closeLyrics() {
+      triggerHaptic();
+      lyricsModal.classList.remove('open');
     }
 
     function openApp() {
@@ -298,22 +477,67 @@
       }
     }
 
-    // Слушатели событий
+    // Сохранение и восстановление прогресса (localStorage)
+    function saveState() {
+      if (historyIndex >= 0) {
+        const state = {
+          trackIndex: historyStack[historyIndex],
+          time: audioPlayer.currentTime || 0,
+          volume: audioPlayer.volume
+        };
+        localStorage.setItem('vibe_player_state', JSON.stringify(state));
+      }
+    }
+
+    function restoreState() {
+      const saved = localStorage.getItem('vibe_player_state');
+      if (saved) {
+        try {
+          const state = JSON.parse(saved);
+          if (state.trackIndex >= 0 && state.trackIndex < myTracks.length) {
+            historyStack = [state.trackIndex];
+            historyIndex = 0;
+            if (state.volume !== undefined) audioPlayer.volume = state.volume;
+            loadAndPlayTrack(state.trackIndex, false, state.time || 0);
+          }
+        } catch (e) {
+          console.log("Ошибка загрузки сохраненного состояния", e);
+        }
+      }
+    }
+
+    // События
     vibeBtn.addEventListener('click', playRandomVibe);
     prevBtn.addEventListener('click', playPrevTrack);
     nextBtn.addEventListener('click', playNextTrack);
+    repeatBtn.addEventListener('click', toggleRepeatMode);
+    lyricsBtn.addEventListener('click', showLyrics);
+    closeLyricsBtn.addEventListener('click', closeLyrics);
     appBtn.addEventListener('click', openApp);
 
-    // Автопереключение по завершению трека
-    audioPlayer.addEventListener('ended', () => {
-      playNextTrack();
+    audioPlayer.addEventListener('ended', playNextTrack);
+
+    audioPlayer.addEventListener('play', () => {
+      coverArt.classList.add('playing');
+      eqBar.classList.add('active');
     });
 
-    // Анимация обложки при воспроизведении / паузе
-    audioPlayer.addEventListener('play', () => coverArt.classList.add('playing'));
-    audioPlayer.addEventListener('pause', () => coverArt.classList.remove('playing'));
+    audioPlayer.addEventListener('pause', () => {
+      coverArt.classList.remove('playing');
+      eqBar.classList.remove('active');
+      saveState();
+    });
 
-    // Управление с клавиатуры (стрелки + пробел)
+    audioPlayer.addEventListener('timeupdate', () => {
+      // Регулярно обновляем таймкод в памяти раз в несколько секунд
+      if (Math.floor(audioPlayer.currentTime) % 3 === 0) {
+        saveState();
+      }
+    });
+
+    audioPlayer.addEventListener('volumechange', saveState);
+
+    // Клавиатура
     document.addEventListener('keydown', (e) => {
       if (e.code === 'ArrowLeft') playPrevTrack();
       if (e.code === 'ArrowRight') playNextTrack();
@@ -322,6 +546,9 @@
         audioPlayer.paused ? audioPlayer.play() : audioPlayer.pause();
       }
     });
+
+    // Инициализация при старте
+    restoreState();
   </script>
 </body>
 
